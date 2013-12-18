@@ -1,0 +1,4 @@
+*.class
+java_screen/.metadata/
+java_screen/bin/
+.gitignore~
