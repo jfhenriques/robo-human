@@ -49,7 +49,7 @@ public class RobotScreen
 		
 		@Override
 		public void keyReleased(KeyEvent e) {
-		//	panel.updateBuffer();
+			panel.updateBuffer();
 		}
 		
 		@Override
@@ -72,8 +72,8 @@ public class RobotScreen
 			
 		}
 	});
-       frame.pack();
-       frame.setVisible(true);
+   frame.pack();
+   frame.setVisible(true);
   
    }
    

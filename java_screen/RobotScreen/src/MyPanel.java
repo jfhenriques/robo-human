@@ -17,6 +17,7 @@ class MyPanel extends JPanel{
 	 */
 	private static final long serialVersionUID = 1L;
 	static int[][] buffer = new int[Constants.height][Constants.width];
+	BufferedImage bufferedImage = new BufferedImage(Constants.width,Constants.height, BufferedImage.TYPE_INT_RGB);
 	Image robo;
 	int robo_width;
 	int robo_height;
@@ -29,6 +30,19 @@ class MyPanel extends JPanel{
  			   buffer[i][j] = 0;
  		   }
  	   }
+    	for(int i = 0; i < Constants.height; i++){
+        	for(int j = 0; j < Constants.width; j++){
+        		
+        		switch(buffer[i][j]){
+        		case 0:
+        			bufferedImage.setRGB(j, i,(new Color(0, 0, 0)).getRGB());
+        			break;
+        		case 1:
+        			bufferedImage.setRGB(j, i,(new Color(255, 255, 255)).getRGB());
+        			break;
+        		}
+        	}
+        }
     	robo = Toolkit.getDefaultToolkit().getImage("rob.png");
     	robo_width = 34;
     	robo_height = 34;
@@ -45,20 +59,8 @@ class MyPanel extends JPanel{
         
     	
         updateBuffer();
-        BufferedImage bufferedImage = new BufferedImage(Constants.width,Constants.height, BufferedImage.TYPE_INT_RGB);
-        for(int i = 0; i < Constants.height; i++){
-        	for(int j = 0; j < Constants.width; j++){
-        		
-        		switch(buffer[i][j]){
-        		case 0:
-        			bufferedImage.setRGB(j, i,(new Color(0, 0, 0)).getRGB());
-        			break;
-        		case 1:
-        			bufferedImage.setRGB(j, i,(new Color(255, 255, 255)).getRGB());
-        			break;
-        		}
-        	}
-        }
+       
+        
         
         g.drawImage(bufferedImage, 0, 0, this);
         
@@ -83,11 +85,14 @@ class MyPanel extends JPanel{
         			if(robo_height/2 >= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
         					((Constants.y_rob-i)*(Constants.y_rob-i)))){
         				buffer[i][j] = 1;
+        				bufferedImage.setRGB(j, i,(new Color(255, 255, 255)).getRGB());
         			}
         		}
         	}
         }
     	this.repaint();
     }
+    
+   
     
 }
