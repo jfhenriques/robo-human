@@ -15,6 +15,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+
+
 public class RobotScreen
 {
 	
@@ -49,7 +51,7 @@ public class RobotScreen
 		
 		@Override
 		public void keyReleased(KeyEvent e) {
-			panel.updateBuffer();
+			//panel.updateBuffer();
 		}
 		
 		@Override
@@ -68,6 +70,16 @@ public class RobotScreen
 			case KeyEvent.VK_UP:
 				Constants.y_rob -= 2;
 				break;
+			case KeyEvent.VK_A:
+				panel.updateBuffer( 500, 500);
+				break;
+			case KeyEvent.VK_L:
+				panel.detectObstacl(MyPanel.ObstacleSensor.RIGHT, 20);
+				break;
+			case KeyEvent.VK_R:
+				Constants.rot_rob += 3;
+				if(Constants.rot_rob >= 180)
+					Constants.rot_rob -= 360;
 			}
 			
 		}
