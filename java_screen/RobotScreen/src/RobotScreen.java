@@ -56,7 +56,6 @@ public class RobotScreen
 		
 		@Override
 		public void keyPressed(KeyEvent e) {
-			System.out.println("pres");
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_LEFT:
 				Constants.x_rob -= 2;
@@ -80,6 +79,9 @@ public class RobotScreen
 				Constants.rot_rob += 3;
 				if(Constants.rot_rob >= 180)
 					Constants.rot_rob -= 360;
+				break;
+			case KeyEvent.VK_T:
+				panel.detectBeacon(50);
 			}
 			
 		}

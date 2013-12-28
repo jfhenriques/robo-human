@@ -128,8 +128,16 @@ class MyPanel extends JPanel{
 			sensorY = (int) (Constants.y_rob - Math.sin(Math.toRadians(Constants.rot_rob-60))*robo_height/2);
 			break;
 		}
-    	/*if(angle1 >= 180)
-    		angle1 -= 360;*/
+    	if(angle1 >= 180)
+    		angle1 -= 360;
+    	if(angle2 >= 180)
+    		angle2 -= 360;
+    	if(angle1 <= -180)
+    		angle1 += 360;
+    	if(angle2 <= -180)
+    		angle2 += 360;
+
+    	
     	
     	System.out.println(angle1 + "---" +angle2);
     	
@@ -145,17 +153,42 @@ class MyPanel extends JPanel{
         			x = 1;
         		
         		if(dist/2 >= Math.sqrt(((sensorX-j)*(sensorX-j))+((sensorY-i)*(sensorY-i))) && 
-        				(dist/2)-3 <= Math.sqrt(((sensorX-j)*(sensorX-j))+((sensorY-i)*(sensorY-i))) &&
-        						Math.toRadians(angle1) >= Math.atan2(y, x) &&
-                				Math.toRadians(angle2) <=  Math.atan2(y, x)
-        				){
-     
-        			
-        			bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+    				(dist/2)-3 <= Math.sqrt(((sensorX-j)*(sensorX-j))+((sensorY-i)*(sensorY-i)))
+    				
+    				){
+        			if(angle2 > 120 &&( Math.toRadians(angle1) >= Math.atan2(y, x) || Math.toRadians(angle2) <=  Math.atan2(y, x) )){
+        				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+        			}else if(Math.toRadians(angle1) >= Math.atan2(y, x) && Math.toRadians(angle2) <=  Math.atan2(y, x)){
+        				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+        			}
         		}
+        		
     			
         	}
         }
+    	this.repaint();
+    }
+    
+    public void detectBeacon(double angle){
+    	double ang = Constants.rot_rob + angle;
+    	if(ang > 180)
+    		ang -= 360;
+    	if(ang < -180)
+    		ang += 360;
+    	for(int i = 0; i < Constants.height; i++){
+        	for(int j = 0; j < Constants.width; j++){
+        		if(5*robo_height>= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+((Constants.y_rob-i)*(Constants.y_rob-i))) && 
+        				(5*robo_height)-1 <= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+((Constants.y_rob-i)*(Constants.y_rob-i)))
+        				&& Math.toRadians(ang) >= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)
+        				&& Math.toRadians(ang-0.5) <= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)){
+        			bresenham_algorithm(Constants.x_rob, Constants.y_rob, j, i);
+        			
+        		}
+        				
+        				
+        	}
+    	}
+    	
     	this.repaint();
     }
   /*
