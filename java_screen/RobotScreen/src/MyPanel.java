@@ -37,6 +37,7 @@ class MyPanel extends JPanel{
     	robo = Toolkit.getDefaultToolkit().getImage("rob.png");
     	robo_width = 34;
     	robo_height = 34;
+    	updateBuffer();
     }
 
 
@@ -47,7 +48,7 @@ class MyPanel extends JPanel{
     
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); 
-        updateBuffer();
+        
         g.drawImage(bufferedImage, 0, 0, this);
      //   g.drawImage(robo, Constants.x_rob, Constants.y_rob, this);
         AffineTransform at = new AffineTransform();
@@ -69,9 +70,9 @@ class MyPanel extends JPanel{
     			}
         	}
         }
-    	this.repaint();
+    	//this.repaint();
     }
-    
+    /*
     public void updateBuffer(int x_dest, int y_dest){
 
     	
@@ -177,12 +178,16 @@ class MyPanel extends JPanel{
     	}
     	
     	this.repaint();
-    }
+    }*/
 
     public void updateBuffer(Arg arg){
     	//update rotate
 		if(arg.rot != -200){
 			Constants.rot_rob = arg.rot;
+			if(Constants.rot_rob > 180)
+				Constants.rot_rob -= 360;
+			if(Constants.rot_rob < -180)
+				Constants.rot_rob += 360;
 		}
 		
 		double ang = Constants.rot_rob + arg.beacon;

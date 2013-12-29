@@ -40,13 +40,18 @@ public class GreetingServer extends Thread {
 					}
 					if(json.getBoolean("left")){
 						float l = json.getLong("left");
+						l = (4-l)*5;
 						arg.left = l;
 					}
 					if(json.getBoolean("right")){
-						arg.right = json.getLong("right");
+						float r = json.getLong("right");
+						r = (4-r)*5;
+						arg.right = r;
 					}
 					if(json.getBoolean("center")){
-						arg.center = json.getLong("center");
+						float c = json.getLong("center");
+						c = (4-c)*5;
+						arg.center = c;
 					}
 					if(json.getBoolean("beacon")){
 						arg.beacon = json.getLong("beacon");

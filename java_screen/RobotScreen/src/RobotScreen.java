@@ -26,7 +26,7 @@ public class RobotScreen
    {
 	   final MyPanel panel = new MyPanel();
 	   
-	   int port = 2004;
+	   int port = 5555;
 	   try
 	   {
 		   Thread t = new GreetingServer(port, panel);
@@ -57,7 +57,7 @@ public class RobotScreen
 		@Override
 		public void keyPressed(KeyEvent e) {
 			switch(e.getKeyCode()){
-			case KeyEvent.VK_LEFT:
+			/*case KeyEvent.VK_LEFT:
 				Constants.x_rob -= 2;
 				break;
 			case KeyEvent.VK_RIGHT:
@@ -82,7 +82,7 @@ public class RobotScreen
 				break;
 			case KeyEvent.VK_T:
 				panel.detectBeacon(50);
-				break;
+				break;*/
 			case KeyEvent.VK_Q:
 				Arg arg = new Arg();
 				arg.x = Constants.x_rob+30;
