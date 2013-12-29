@@ -12,15 +12,12 @@
 
 
 
-#define JOY_DEV "/dev/input/js0"
-
-
 #define JOYS_OK			0x0
 #define JOYS_NOT_FOUND	0x1
 #define JOYS_LOST		0x2
 
 
-int InitJoystick();
+int InitJoystick(const char * dev_name);
 int DetermineAction(int beaconToFollow, float *lPow, float *rPow);
 
 

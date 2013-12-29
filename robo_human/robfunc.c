@@ -40,13 +40,15 @@ float x,y;
 static void *read_joys_values(void *);
 
 
-int InitJoystick()
+int InitJoystick(const char *dev_name)
 {
 
 	memset(&joys, 0, sizeof(joys_t));
 
+	printf("Initializing joystick: %s\n", dev_name);
 
-	if( ( joys.fd = open( JOY_DEV , O_RDONLY)) == -1 )
+
+	if( ( joys.fd = open( dev_name , O_RDONLY)) == -1 )
 	{
 			printf( "Couldn't open joystick\n" );
 			return JOYS_NOT_FOUND;
@@ -76,7 +78,6 @@ int InitJoystick()
 
 static void *read_joys_values(void *v)
 {
-
 	for(;;)
 	{
 				/* read the joystick state */
@@ -93,6 +94,8 @@ static void *read_joys_values(void *v)
 						break;
 		}
 	}
+
+	return NULL;
 }
 
 /* Calculate the power of left and right motors */

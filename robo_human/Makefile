@@ -16,7 +16,7 @@ CXXFLAGS      = -m64 -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)
 INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++-64 -I. -I/usr/include/qt4/QtCore -I/usr/include/qt4/QtGui -I/usr/include/qt4 -I../libRobSock -I.
 LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
-LIBS          = $(SUBLIBS)  -L/usr/lib/x86_64-linux-gnu -L/home/joao/Desktop/cibertools-v2.1/robhuman/../libRobSock/ -lRobSock -lQtGui -lQtCore -lpthread 
+LIBS          = $(SUBLIBS)  -L/usr/lib/x86_64-linux-gnu -L../libRobSock/ -lRobSock -lQtGui -lQtCore -lpthread $(shell pkg-config --cflags --libs jansson)
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/bin/qmake
@@ -44,9 +44,11 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = mainRob.c \
-		robfunc.c 
+		robfunc.c \
+		json_parser.c
 OBJECTS       = mainRob.o \
-		robfunc.o
+		robfunc.o \
+		json_parser.o
 DIST          = /usr/share/qt4/mkspecs/common/unix.conf \
 		/usr/share/qt4/mkspecs/common/linux.conf \
 		/usr/share/qt4/mkspecs/common/gcc-base.conf \
@@ -202,6 +204,9 @@ compiler_lex_clean:
 compiler_clean: 
 
 ####### Compile
+
+json_parser.o: json_parser.c common.h
+	$(CC) -c $(CFLAGS) $(INCPATH) -o json_parser.o json_parser.c
 
 mainRob.o: mainRob.c ../libRobSock/RobSock.h \
 		robfunc.h
