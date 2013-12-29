@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -30,10 +31,7 @@ class MyPanel extends JPanel{
 
     	for(int i = 0; i < Constants.height; i++){
         	for(int j = 0; j < Constants.width; j++){
-        		
-
     			bufferedImage.setRGB(j, i,(new Color(0, 0, 0)).getRGB());
-
         	}
         }
     	robo = Toolkit.getDefaultToolkit().getImage("rob.png");
@@ -49,17 +47,9 @@ class MyPanel extends JPanel{
     
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); 
-        
-    	
         updateBuffer();
-       
-        
-        
         g.drawImage(bufferedImage, 0, 0, this);
-        
      //   g.drawImage(robo, Constants.x_rob, Constants.y_rob, this);
-        
-        
         AffineTransform at = new AffineTransform();
        
         at.translate(Constants.x_rob+robo_width/2+1-robo_width, Constants.y_rob-robo_height/2+1);
@@ -182,63 +172,144 @@ class MyPanel extends JPanel{
         				&& Math.toRadians(ang) >= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)
         				&& Math.toRadians(ang-0.5) <= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)){
         			bresenham_algorithm(Constants.x_rob, Constants.y_rob, j, i);
-        			
-        		}
-        				
-        				
+        		}	
         	}
     	}
     	
     	this.repaint();
     }
-  /*
-    private void drawSensor(double sensor, int direcao) {
-		double angleTop = 0;
-		double angleBot = 0;
 
-		int robotX= (int) ((x-centerX)*tamanhoPixel+janela.width/2);
-		int robotY= (int) ((centerY-y)*tamanhoPixel+janela.height/2);
-
-		if(direcao==1){
-			angleTop = compass+80;
-			angleBot = compass+20;
-		}		
-		else if(direcao==2){
-			angleTop = compass-20;
-			angleBot =compass-80;
+    public void updateBuffer(Arg arg){
+    	//update rotate
+		if(arg.rot != -200){
+			Constants.rot_rob = arg.rot;
 		}
-		else if(direcao==0){
-			angleTop = compass+30;
-			angleBot =compass-30;
+		
+		double ang = Constants.rot_rob + arg.beacon;
+    	if(ang > 180)
+    		ang -= 360;
+    	if(ang < -180)
+    		ang += 360;
+    	
+    	
+		ArrayList<Float> angle1 = new ArrayList<Float>();
+		ArrayList<Float> angle2 = new ArrayList<Float>();
+		ArrayList<Float> dist = new ArrayList<Float>();
+		ArrayList<Integer> sensorX = new ArrayList<Integer>();
+		ArrayList<Integer> sensorY = new ArrayList<Integer>();
+		if(arg.left != -1){
+			angle1.add((float)Constants.rot_rob + 90);
+			angle2.add((float) Constants.rot_rob + 30);
+		}else{
+			angle1.add((float) -500);
+			angle2.add((float) -500);
+		}
+		dist.add(arg.left);
+		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot + 60))*robo_height/2));
+		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot + 60))*robo_height/2));
+		
+		if(arg.center != -1){
+			angle1.add((float)Constants.rot_rob + 30);
+			angle2.add((float) Constants.rot_rob - 30);
+		}else{
+			angle1.add((float) -500);
+			angle2.add((float) -500);
+		}
+		dist.add(arg.center);
+		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot))*robo_height/2));
+		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot))*robo_height/2));
+		
+		if(arg.right != -1){
+			angle1.add((float)Constants.rot_rob -30);
+			angle2.add((float) Constants.rot_rob - 90);
+		}else{
+			angle1.add((float) -500);
+			angle2.add((float) -500);
+		}
+		dist.add(arg.right);
+		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot - 60))*robo_height/2));
+		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot - 60))*robo_height/2));
+		
+		for(int i = 0; i < angle1.size(); i++){
+			if(angle1.get(i) >= 180)
+	    		angle1.set(i, angle1.get(i)-360);
+	    	if(angle2.get(i) >= 180)
+	    		angle2.set(i, angle1.get(i)-360);
+	    	if(angle1.get(i) <= -180)
+	    		angle1.set(i, angle1.get(i)+360);
+	    	if(angle2.get(i) <= -180)
+	    		angle2.set(i, angle1.get(i)+360);
 		}
 
-		double proximidade = sensor;
-		double barulho =cif.GetNoiseBeaconSensor()/100/2;
 
-		// por cada angulo vamos traçar os pontos àquela distância
-		for(int angulo = 0; angulo < (int)(angleTop-angleBot);angulo++){
-			for(int raio=0; raio < raioSensor; raio++){
-				double xTop = Math.cos(Math.toRadians(angleTop-angulo))*raio;
-				double yTop = Math.sin(Math.toRadians(angleTop-angulo))*raio;
-				double pActual = area[robotX+(int)xTop][robotY-(int)yTop];
-				if(raio>=raioSensor-proximidade*raioSensor){
-					double forcaSensor = barulho;
-					if(sensor>1){
-						forcaSensor= 1-barulho;
-						area[robotX+(int)xTop][robotY-(int)yTop]=forcaSensor*pActual/(forcaSensor*pActual+(1-forcaSensor)*(1-pActual));
-					}
-				}
-				else{
-					double forcaSensor=barulho;
-					area[robotX+(int)xTop][robotY-(int)yTop]=forcaSensor*pActual/(forcaSensor*pActual+(1-forcaSensor)*(1-pActual));
-				}
+		
+    	for(int i = 0; i < Constants.height; i++){
+        	for(int j = 0; j < Constants.width; j++){
+        		
 
-			}
-		}
-		updateGrid();
-
-	}*/
-    
+        		
+        		//update route
+        		if(arg.x != -1 && arg.y != -1){
+        			if(Math.abs(arg.x - Constants.x_rob) < 5 && Math.abs(arg.y - Constants.y_rob) < 5 ){
+        				//shortest distance
+            			if(robo_height/2 >= Math.sqrt(((arg.x-j)*(arg.x-j))+
+            					((arg.y-i)*(arg.y-i)))){
+            				bufferedImage.setRGB(j, i,(new Color(255, 255, 255)).getRGB());
+            			}	
+            		}else{
+            			if(robo_height/2 >= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
+            					((Constants.y_rob-i)*(Constants.y_rob-i))) && (robo_height/2)-1.5 <= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
+            	    					((Constants.y_rob-i)*(Constants.y_rob-i)))){
+            				bresenham_algorithm(j,i,arg.x+(j-Constants.x_rob), arg.y+(i-Constants.y_rob));
+            			}
+            		}
+        		}
+        		
+        		//update obstacles
+        		for(int z = 0; z < angle1.size(); z++){
+        			if(angle1.get(z) == -500)
+        				continue;
+        			int y = sensorY.get(z)-i;
+            		int x = j-sensorX.get(z);
+            		if(y == 0)
+            			y = 1;
+            		
+            		if(x == 0)
+            			x = 1;
+            		
+            		if(dist.get(z)/2 >= Math.sqrt(((sensorX.get(z)-j)*(sensorX.get(z)-j))+((sensorY.get(z)-i)*(sensorY.get(z)-i))) && 
+        				(dist.get(z)/2)-3 <= Math.sqrt(((sensorX.get(z)-j)*(sensorX.get(z)-j))+((sensorY.get(z)-i)*(sensorY.get(z)-i)))
+        				
+        				){
+            			if(angle2.get(z) > 120 &&( Math.toRadians(angle1.get(z)) >= Math.atan2(y, x) || Math.toRadians(angle2.get(z)) <=  Math.atan2(y, x) )){
+            				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+            			}else if(Math.toRadians(angle1.get(z)) >= Math.atan2(y, x) && Math.toRadians(angle2.get(z)) <=  Math.atan2(y, x)){
+            				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+            			}
+            		}
+        			
+        		}
+        		//update beacon
+        		if(arg.beacon != -1){
+        			if(5*robo_height>= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i))) && 
+            				(5*robo_height)-1 <= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i)))
+            				&& Math.toRadians(ang) >= Math.atan2(arg.y-i, j-arg.x)
+            				&& Math.toRadians(ang-0.5) <= Math.atan2(arg.y-i, j-arg.x)){
+            			bresenham_algorithm(arg.x, arg.y, j, i);
+            		}
+        		}
+        		
+        	}
+        }
+    	
+    	//update position
+    	if(arg.x != -1 && arg.y != -1){
+    		Constants.x_rob = arg.x;
+    		Constants.y_rob = arg.y;
+    	}
+    	
+    	this.repaint();
+    }
     
     //bresenham line algorithm
     private void bresenham_algorithm(int x,int y,int x2, int y2) {

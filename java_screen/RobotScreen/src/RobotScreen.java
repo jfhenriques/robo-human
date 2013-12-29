@@ -20,24 +20,24 @@ import javax.swing.JPanel;
 public class RobotScreen
 {
 	
+	
 
    public static void main(String [] args) throws IOException
    {
+	   final MyPanel panel = new MyPanel();
 	   
-	   
-	   
-	  /* int port = 2004;
+	   int port = 2004;
 	   try
 	   {
-		   Thread t = new GreetingServer(port);
+		   Thread t = new GreetingServer(port, panel);
 		   t.start();
 
 	   }catch(IOException e){
 		   e.printStackTrace();
-	   }*/
+	   }
 	   JFrame frame = new JFrame("Meu primeiro frame em Java");
       // frame.setSize(400,400);
-       final MyPanel panel = new MyPanel();
+     
        frame.add(panel);
        panel.setFocusable(true);
        panel.requestFocusInWindow();
@@ -82,7 +82,21 @@ public class RobotScreen
 				break;
 			case KeyEvent.VK_T:
 				panel.detectBeacon(50);
+				break;
+			case KeyEvent.VK_Q:
+				Arg arg = new Arg();
+				arg.x = Constants.x_rob+30;
+				arg.y = Constants.y_rob+3;
+				arg.rot = Constants.rot_rob+180;
+				arg.left = 20;
+				arg.right= 20;
+				arg.center = 40;
+				arg.beacon = 50;
+				panel.updateBuffer(arg);
+				
 			}
+			
+			
 			
 		}
 	});
