@@ -4,6 +4,7 @@
 
 
 
+
 #define DEF_JOY_DEV		"/dev/input/js0"
 #define DEF_HOSTNAME	"localhost"
 #define DEF_ROBONAME	"R1"

@@ -78,10 +78,13 @@ int InitJoystick(const char *dev_name)
 
 static void *read_joys_values(void *v)
 {
+	int unused __attribute__((unused));
+	(void)(v);
+
 	for(;;)
 	{
 				/* read the joystick state */
-		read(joys.fd, &joys.js, sizeof(struct js_event));
+		unused = read(joys.fd, &joys.js, sizeof(struct js_event));
 		
 				/* see what to do with the event */
 		switch (joys.js.type & ~JS_EVENT_INIT)
@@ -101,6 +104,7 @@ static void *read_joys_values(void *v)
 /* Calculate the power of left and right motors */
 int DetermineAction(int beaconToFollow, float *lPow, float *rPow)
 {
+	(void)(beaconToFollow);
 
 	if(    ( joys.axis[0] > MIN_VALUE || joys.axis[0] < -MIN_VALUE )
 		|| ( joys.axis[1] > MIN_VALUE || joys.axis[1] < -MIN_VALUE ) )
