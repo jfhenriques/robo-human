@@ -19,24 +19,24 @@
 
 #include "common.h"
 
+
+
 int main(int argc, char *argv[])
 {
 	char cfg[256]="config.json";
 	
 	float lPow,rPow;
-	int state=STOP, stoppedState=RUN, rob_id = 1;
+	int state=STOP, stoppedState=RUN;
 	int beaconToFollow=0;
 	rob_cfg_t rob_cfg;
 
-	//printf( " Sample Robot\n Copyright (C) 2001-2013 Universidade de Aveiro\n" );
-
 	 /* processing arguments */
-	while (argc > 2) /* every option has a value, thus argc must be 1, 3, 5, ... */
+	while (argc > 2)
 	{
 		if (strcmp(argv[1], "-cfg") == 0)
 		{
 		   strncpy(cfg, argv[2], 99);
-		   cfg[256]='\0';
+		   cfg[255]='\0';
 		}
 		else
 		{
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 		argv += 2;
 	}
 
-	int res =rob_parse_config(cfg, &rob_cfg);
+	rob_parse_config(cfg, &rob_cfg);
 
 	InitJoystick(rob_cfg.joys_dev);
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	   printf( "%s Failed to connect\n", rob_cfg.robo_name); 
 	   exit(1);
 	}
-	printf( "%s Connected\n", rob_cfg.robo_name );
+	printf( "Connected: %s\n", rob_cfg.robo_name );
 	state=STOP;
 	while(1)
 	{
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		{
 			//TODO: enviar mensagem ao viewer
 
-		   printf(  "%s Exiting\n", rob_cfg.robo_name );
+		   printf(  "Exiting: %s\n", rob_cfg.robo_name );
 		   exit(0);
 		}
 		if(state==STOP && GetStartButton()) state=stoppedState;  /* Restart     */
