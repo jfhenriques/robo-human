@@ -19,12 +19,19 @@ public class GreetingServer extends Thread {
 
 	   public void run()
 	   {
+		  Socket server = null;
+		try {
+			server = serverSocket.accept();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	      while(true)
 	      {
 	         try
 	         {
 	            
-	            Socket server = serverSocket.accept();
+	           
 	            DataInputStream in = new DataInputStream(server.getInputStream());
 	            Arg arg = new Arg();
 	            try {
@@ -71,7 +78,7 @@ public class GreetingServer extends Thread {
 	                 new DataOutputStream(server.getOutputStream());
 	            out.writeUTF("Thank you for connecting to "
 	              + server.getLocalSocketAddress() + "\nGoodbye!");*/
-	            server.close();
+	          
 	         }catch(SocketTimeoutException s)
 	         {
 	            System.out.println("Socket timed out!");
@@ -82,5 +89,11 @@ public class GreetingServer extends Thread {
 	            break;
 	         }
 	      }
+	      try {
+			server.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	   }
 }
