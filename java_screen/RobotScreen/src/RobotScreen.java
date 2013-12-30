@@ -27,14 +27,14 @@ public class RobotScreen
 	   final MyPanel panel = new MyPanel();
 	   
 	   int port = 5555;
-	  /* try
+	   try
 	   {
 		   Thread t = new GreetingServer(port, panel);
 		   t.start();
 
 	   }catch(IOException e){
 		   e.printStackTrace();
-	   }*/
+	   }
 	   JFrame frame = new JFrame("Meu primeiro frame em Java");
       // frame.setSize(400,400);
      
