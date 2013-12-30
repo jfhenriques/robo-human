@@ -9,6 +9,9 @@ import org.json.JSONObject;
 public class GreetingServer extends Thread {
 	   private ServerSocket serverSocket;
 	   private MyPanel panel;
+	   private double x_delta = -1;
+	   private double y_delta = -1;
+	   private double rot = -1;
 	   
 	   
 	   private static final boolean LOG_INPUT = true;
@@ -89,13 +92,29 @@ public class GreetingServer extends Thread {
 	   	            	
 	   					JSONObject json = new JSONObject(str);
 	   					if(json.has("x")){
-	   						arg.x = (int)json.getDouble("x");
+	   						if(x_delta == -1){
+	   							x_delta = json.getDouble("x");
+	   						}
+	   						float aux = (float) (Constants.x_robInit+((json.getDouble("x")-x_delta)*Constants.width)/Constants.alpha);
+	   						arg.x = (int)aux;
 	   					}
 	   					if(json.has("y")){
-	   						arg.x = (int)json.getDouble("y");
+	   						if(y_delta == -1){
+	   							y_delta = json.getDouble("y");
+	   						}
+	   						float aux = (float) (Constants.y_robInit+((json.getDouble("y")-y_delta)*Constants.height)/Constants.alpha);
+	   						arg.y = (int)aux;
+	   						
 	   					}
 	   					if(json.has("rotate")){
-	   						arg.rot = (int)json.getDouble("rotate");
+	   						if(rot == -1){
+	   							rot = json.getDouble("rotate");
+	   						}
+	   						arg.rot = (int) (json.getDouble("rotate")-rot);
+	   						if(arg.rot > 180)
+	   							arg.rot -= 360;
+	   				    	if(arg.rot < -180)
+	   				    		arg.rot += 360;
 	   					}
 	   					if(json.has("left")){
 	   						float l = (float)json.getDouble("left");
