@@ -207,7 +207,7 @@ void send_all_viewer_message(rob_cfg_t *cfg, char* msg, size_t size)
 	}
 }
 
-#define MIN_SENSOR_TO_SEND	0.35f
+#define MIN_SENSOR_TO_SEND	2.00f
 
 void send_all_viewer_state_message(rob_cfg_t *cfg, rob_state_t *state)
 {
