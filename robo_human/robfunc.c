@@ -231,7 +231,6 @@ void send_all_viewer_state_message(rob_cfg_t *cfg, rob_state_t *state)
 	if( state->beaconVis )
 		json_object_set_new( j_root, "beacon", json_real( state->beaconDir ) );
 
-
 	json_text = json_dumps(j_root, JSON_PRESERVE_ORDER);
 
 	send_all_viewer_message(cfg, json_text, strlen(json_text) + 1);
