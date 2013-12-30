@@ -181,6 +181,7 @@ class MyPanel extends JPanel{
     }*/
 
     public void updateBuffer(Arg arg){
+    	
     	//update rotate
 		if(arg.rot != -200){
 			Constants.rot_rob = arg.rot;

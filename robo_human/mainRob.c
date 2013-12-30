@@ -176,7 +176,6 @@ int main(int argc, char *argv[])
 
 				if( ( rob_state.beaconVis = IsBeaconReady(beaconToFollow) ) )
 				{
-					printf(".");
 					beacon = GetBeaconSensor(beaconToFollow);
 					
 					rob_state.beaconVis = beacon.beaconVisible;
@@ -185,7 +184,7 @@ int main(int argc, char *argv[])
 						rob_state.beaconDir = beacon.beaconDir;
 				}
 
-			if(GetTime() % 4 == 0)
+			if(GetTime() % 2 == 0)
 				send_all_viewer_state_message(&rob_cfg, &rob_state);
 
 			//Request Sensors for next cycle

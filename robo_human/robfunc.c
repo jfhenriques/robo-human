@@ -193,11 +193,6 @@ int send_viewer_message(rob_viewer_cfg_t *viewer, char* msg, size_t size)
 
 void send_all_viewer_message(rob_cfg_t *cfg, char* msg, size_t size)
 {
-	
-	
-	//printf("[%d] %s                        \r", size, msg);
-
-
 	if(    cfg
 		&& cfg->rob_viewers
 		&& cfg->rob_viewer_size > 0 )
@@ -205,7 +200,7 @@ void send_all_viewer_message(rob_cfg_t *cfg, char* msg, size_t size)
 		size_t i;
 
 		for(i = 0; i < cfg->rob_viewer_size; i++)
-			send_viewer_message(&cfg->rob_viewers[1], msg, size);
+			send_viewer_message(&cfg->rob_viewers[i], msg, size);
 	}
 }
 
@@ -237,7 +232,7 @@ void send_all_viewer_state_message(rob_cfg_t *cfg, rob_state_t *state)
 		json_object_set_new( j_root, "beacon", json_real( state->beaconDir ) );
 
 
-	json_text = json_dumps(j_root, 0);
+	json_text = json_dumps(j_root, JSON_PRESERVE_ORDER);
 
 	send_all_viewer_message(cfg, json_text, strlen(json_text) + 1);
 
