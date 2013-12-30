@@ -219,9 +219,13 @@ void cfg_parser_connect_viewers(rob_cfg_t *cfg)
 
 			}
 
+			if( view->addrinfo )
+			{
+				freeaddrinfo( cfg->rob_viewers[i].addrinfo );
+				view->addrinfo = NULL;
+			}
 
 			view->state = ROB_VIEWER_ERROR;
-
 		}
 	}
 }

@@ -26,6 +26,7 @@
 
 
 
+
 int main(int argc, char *argv[])
 {
 	char cfg[MAX_FILE_NAME_SIZE]="config.json";
@@ -35,6 +36,12 @@ int main(int argc, char *argv[])
 	int beaconToFollow=0;
 	int ret = 0;
 	rob_cfg_t rob_cfg;
+	rob_state_t rob_state;
+	struct beaconMeasure beacon;
+	int totalBeacons = 0,curGroundSensor = -1;
+
+	memset(&rob_state, 0, sizeof(rob_state_t));
+
 
 	 /* processing arguments */
 	while (argc > 2)
@@ -70,7 +77,10 @@ int main(int argc, char *argv[])
 
 	else
 	{
-		printf( "Connected: %s\n", rob_cfg.robo_name );
+		totalBeacons = GetNumberOfBeacons();
+
+		printf( "Connected: %s, Total beacons: %d\n", rob_cfg.robo_name, totalBeacons);
+
 		state=STOP;
 		while(1)
 		{
@@ -79,63 +89,120 @@ int main(int argc, char *argv[])
 
 			if(GetFinished()) /* Simulator has received Finish() or Robot Removed */
 			{
-				//TODO: enviar mensagem ao viewer
-
 			   printf(  "Exiting: %s\n", rob_cfg.robo_name );
 			   break;
 			}
+
 			if(state==STOP && GetStartButton()) state=stoppedState;  /* Restart     */
 			if(state!=STOP && GetStopButton())  {
 				stoppedState=state;
 				state=STOP; /* Interrupt */
 			}
 
+			curGroundSensor = GetGroundSensor();
+
 			switch (state)
 			{
-					 case RUN:    /* Go */
-			  if( GetVisitingLed() ) state = WAIT;
-					  if(GetGroundSensor()==0) {         /* Visit Target */
-						 SetVisitingLed(1);
-						 printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
-					  }
+				case RUN:    /* Go */
+					
+					if( GetVisitingLed() )
+						state = WAIT;
 
-					  else {
-						 DetermineAction(0,&lPow,&rPow);
-						 DriveMotors(lPow,rPow);
-					  }
-					  break;
-			 case WAIT: /* Wait for others to visit target */
-				 if(GetReturningLed()) state = RETURN;
+					if( curGroundSensor == beaconToFollow )
+					{
+						beaconToFollow++;
+						SetVisitingLed(1);
+						printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
+					}
+					else {
 
-						 DriveMotors(0.0,0.0);
-						 break;
-			 case RETURN: /* Return to home area */
-				 if(GetGroundSensor()==1) { /* Finish */
-							 Finish();
-							 printf("%s found home at %d\n", rob_cfg.robo_name, GetTime());
-						 }
-						 else {
-							DetermineAction(1,&lPow,&rPow);
-							DriveMotors(lPow,rPow);
-						 }
-						 break;
+						DetermineAction(beaconToFollow, &lPow, &rPow);
+						DriveMotors(lPow, rPow);
+					}
+				
+					break;
+
+				case RETURN:    /* Go */
+
+					if( curGroundSensor == totalBeacons )
+					{
+						printf("%s found home at %d\n", rob_cfg.robo_name, GetTime());
+						Finish();
+					}
+					else {
+						DetermineAction(beaconToFollow, &lPow, &rPow);
+						DriveMotors(lPow, rPow);
+					}
+				
+					break;
+
+				case WAIT: /* Wait for others to visit target */
+
+					if(GetReturningLed())
+						state = RETURN;
+
+					else
+					{
+						SetVisitingLed(0);
+						state = RUN;
+					}
+
+					DriveMotors(0.0,0.0);
+
+					break;
 			}
 
-			Say(rob_cfg.robo_name);
+			//Say(rob_cfg.robo_name);
 
-		 //Request Sensors for next cycle
-		  if(GetTime() % 2 == 0) {
+
+				rob_state.state = state;
+
+				if( (rob_state.leftAvail = IsObstacleReady(LEFT)) )
+					rob_state.left = GetObstacleSensor(LEFT);
+
+				if( (rob_state.rightAvail = IsObstacleReady(RIGHT)) )
+					rob_state.right = GetObstacleSensor(RIGHT);
+
+				if( (rob_state.centerAvail = IsObstacleReady(CENTER)) )
+					rob_state.center = GetObstacleSensor(CENTER);
+
+
+				if(IsGPSReady())
+				{
+					rob_state.x = GetX();
+					rob_state.y = GetY();
+					rob_state.dir = GetDir();
+				}
+
+				if( ( rob_state.beaconVis = IsBeaconReady(beaconToFollow) ) )
+				{
+					printf(".");
+					beacon = GetBeaconSensor(beaconToFollow);
+					
+					rob_state.beaconVis = beacon.beaconVisible;
+
+					if( beacon.beaconVisible )
+						rob_state.beaconDir = beacon.beaconDir;
+				}
+
+			if(GetTime() % 4 == 0)
+				send_all_viewer_state_message(&rob_cfg, &rob_state);
+
+			//Request Sensors for next cycle
+			if(GetTime() % 2 == 0) {
+
 				RequestObstacleSensor(CENTER);
 
-				if(GetTime() % 8 == 0 || beaconToFollow == GetNumberOfBeacons())
+				if(    (GetTime() % 8) == 0
+					|| beaconToFollow == totalBeacons )
 					RequestGroundSensor();
 				else
 					RequestBeaconSensor(beaconToFollow);
 
-			 }
-			 else {
+			}
+			else {
 				RequestSensors(2, "IRSensor1", "IRSensor2");
-			 }
+			}
 		}
 
 	}
