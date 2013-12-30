@@ -21,9 +21,11 @@ class MyPanel extends JPanel{
 	private static final long serialVersionUID = 1L;
 	//static int[][] buffer = new int[Constants.height][Constants.width];
 	BufferedImage bufferedImage = new BufferedImage(Constants.width,Constants.height, BufferedImage.TYPE_INT_RGB);
-	Image robo;
+	Image robo_1;
+	Image robo_2;
 	int robo_width;
 	int robo_height;
+	int state;
 	static public enum ObstacleSensor  {LEFT, CENTER, RIGHT}
 	
     public MyPanel() {
@@ -34,10 +36,12 @@ class MyPanel extends JPanel{
     			bufferedImage.setRGB(j, i,(new Color(0, 0, 0)).getRGB());
         	}
         }
-    	robo = Toolkit.getDefaultToolkit().getImage("rob.png");
+    	robo_1 = Toolkit.getDefaultToolkit().getImage("rob_run.png");
+    	robo_2 = Toolkit.getDefaultToolkit().getImage("rob_return.png");
     	robo_width = 34;
     	robo_height = 34;
     	updateBuffer();
+    	state = 1;
     }
 
 
@@ -56,7 +60,10 @@ class MyPanel extends JPanel{
         at.translate(Constants.x_rob+robo_width/2+1-robo_width, Constants.y_rob-robo_height/2+1);
         at.rotate(Math.toRadians(-Constants.rot_rob), robo_width/2, robo_height/2);
         Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(robo, at, null);
+        if(state == 4)
+        	g2d.drawImage(robo_2, at, null);
+        else 
+        	g2d.drawImage(robo_1, at, null);
         
     } 
     
@@ -72,115 +79,12 @@ class MyPanel extends JPanel{
         }
     	//this.repaint();
     }
-    /*
-    public void updateBuffer(int x_dest, int y_dest){
-
-    	
-    	for(int i = 0; i < Constants.height; i++){
-        	for(int j = 0; j < Constants.width; j++){
-        			
-    			if(robo_height/2 >= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
-    					((Constants.y_rob-i)*(Constants.y_rob-i))) && (robo_height/2)-1.5 <= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
-    	    					((Constants.y_rob-i)*(Constants.y_rob-i)))){
-    				bresenham_algorithm(j,i,x_dest+(j-Constants.x_rob), y_dest+(i-Constants.y_rob));
-    			}
-        	}
-        }
-    	
-    	Constants.x_rob = x_dest;
-		Constants.y_rob = y_dest;	
-    }
-    
-    public void detectObstacl(ObstacleSensor sensor, float dist){
-    	double angle1 = 0;
-    	double angle2 = 0;
-    	int sensorX = 0;
-    	int sensorY=0;
-    	switch (sensor) {
-		case LEFT:
-			angle1 = Constants.rot_rob + 90;
-			angle2 = Constants.rot_rob + 30;
-			sensorX = (int) (Constants.x_rob + Math.cos(Math.toRadians(Constants.rot_rob + 60))*robo_height/2);
-			sensorY = (int) (Constants.y_rob - Math.sin(Math.toRadians(Constants.rot_rob + 60))*robo_height/2);
-			break;
-		case CENTER:
-			
-				angle1 = Constants.rot_rob + 30;
-				angle2 = Constants.rot_rob - 30;
-			
-			
-			sensorX = (int) (Constants.x_rob + Math.cos(Math.toRadians(Constants.rot_rob))*robo_height/2);
-			sensorY = (int) (Constants.y_rob - Math.sin(Math.toRadians(Constants.rot_rob))*robo_height/2);
-			break;
-		case RIGHT:
-			angle1 = Constants.rot_rob - 30;
-			angle2 = Constants.rot_rob - 90;
-			sensorX = (int) (Constants.x_rob + Math.cos(Math.toRadians(Constants.rot_rob-60))*robo_height/2);
-			sensorY = (int) (Constants.y_rob - Math.sin(Math.toRadians(Constants.rot_rob-60))*robo_height/2);
-			break;
-		}
-    	if(angle1 >= 180)
-    		angle1 -= 360;
-    	if(angle2 >= 180)
-    		angle2 -= 360;
-    	if(angle1 <= -180)
-    		angle1 += 360;
-    	if(angle2 <= -180)
-    		angle2 += 360;
-
-    	
-    	
-    	System.out.println(angle1 + "---" +angle2);
-    	
-    	bufferedImage.setRGB(sensorX, sensorY,(new Color(255, 255, 255)).getRGB());
-    	for(int i = 0; i < Constants.height; i++){
-        	for(int j = 0; j < Constants.width; j++){
-        		int y = sensorY-i;
-        		int x = j-sensorX;
-        		if(y == 0)
-        			y = 1;
-        		
-        		if(x == 0)
-        			x = 1;
-        		
-        		if(dist/2 >= Math.sqrt(((sensorX-j)*(sensorX-j))+((sensorY-i)*(sensorY-i))) && 
-    				(dist/2)-3 <= Math.sqrt(((sensorX-j)*(sensorX-j))+((sensorY-i)*(sensorY-i)))
-    				
-    				){
-        			if(angle2 > 120 &&( Math.toRadians(angle1) >= Math.atan2(y, x) || Math.toRadians(angle2) <=  Math.atan2(y, x) )){
-        				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
-        			}else if(Math.toRadians(angle1) >= Math.atan2(y, x) && Math.toRadians(angle2) <=  Math.atan2(y, x)){
-        				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
-        			}
-        		}
-        		
-    			
-        	}
-        }
-    	this.repaint();
-    }
-    
-    public void detectBeacon(double angle){
-    	double ang = Constants.rot_rob + angle;
-    	if(ang > 180)
-    		ang -= 360;
-    	if(ang < -180)
-    		ang += 360;
-    	for(int i = 0; i < Constants.height; i++){
-        	for(int j = 0; j < Constants.width; j++){
-        		if(5*robo_height>= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+((Constants.y_rob-i)*(Constants.y_rob-i))) && 
-        				(5*robo_height)-1 <= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+((Constants.y_rob-i)*(Constants.y_rob-i)))
-        				&& Math.toRadians(ang) >= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)
-        				&& Math.toRadians(ang-0.5) <= Math.atan2(Constants.y_rob-i, j-Constants.x_rob)){
-        			bresenham_algorithm(Constants.x_rob, Constants.y_rob, j, i);
-        		}	
-        	}
-    	}
-    	
-    	this.repaint();
-    }*/
+   
 
     public void updateBuffer(Arg arg){
+    	//update state 
+    	if(arg.state != -1)
+    		state = arg.state;
     	
     	//update rotate
 		if(arg.rot != -200){
@@ -266,7 +170,7 @@ class MyPanel extends JPanel{
             			if(robo_height/2 >= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
             					((Constants.y_rob-i)*(Constants.y_rob-i))) && (robo_height/2)-1.5 <= Math.sqrt(((Constants.x_rob-j)*(Constants.x_rob-j))+
             	    					((Constants.y_rob-i)*(Constants.y_rob-i)))){
-            				bresenham_algorithm(j,i,arg.x+(j-Constants.x_rob), arg.y+(i-Constants.y_rob));
+            				bresenham_algorithm(j,i,arg.x+(j-Constants.x_rob), arg.y+(i-Constants.y_rob), new Color(255,255,255));
             			}
             		}
         		}
@@ -295,15 +199,21 @@ class MyPanel extends JPanel{
             		}
         			
         		}
+        		
+        		//update initposition
+        		if(10 >= Math.sqrt(((Constants.x_robInit-j)*(Constants.x_robInit-j))+((Constants.y_robInit-i)*(Constants.y_robInit-i)))){
+        			bufferedImage.setRGB(j, i,(new Color(0, 255, 255)).getRGB());
+        		}
         		//update beacon
         		if(arg.beacon != -1){
         			if(5*robo_height>= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i))) && 
             				(5*robo_height)-1 <= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i)))
             				&& Math.toRadians(ang) >= Math.atan2(arg.y-i, j-arg.x)
             				&& Math.toRadians(ang-0.5) <= Math.atan2(arg.y-i, j-arg.x)){
-            			bresenham_algorithm(arg.x, arg.y, j, i);
+            			bresenham_algorithm(arg.x, arg.y, j, i, new Color(0,255,0));
             		}
         		}
+        
         		
         	}
         }
@@ -318,7 +228,7 @@ class MyPanel extends JPanel{
     }
     
     //bresenham line algorithm
-    private void bresenham_algorithm(int x,int y,int x2, int y2) {
+    private void bresenham_algorithm(int x,int y,int x2, int y2, Color color) {
         int w = x2 - x ;
         int h = y2 - y ;
         int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0 ;
@@ -335,7 +245,7 @@ class MyPanel extends JPanel{
         }
         int numerator = longest >> 1 ;
         for (int i=0;i<=longest;i++) {
-        	bufferedImage.setRGB(x, y,(new Color(255, 255, 255)).getRGB());
+        	bufferedImage.setRGB(x, y,color.getRGB());
           //  putpixel(x,y,color) ;
             numerator += shortest ;
             if (!(numerator<longest)) {

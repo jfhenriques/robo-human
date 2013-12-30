@@ -97,7 +97,7 @@ public class GreetingServer extends Thread {
 	   						if(x_delta == -1){
 	   							x_delta = json.getDouble("x");
 	   						}
-	   						float aux = (float) (Constants.x_robInit+((json.getDouble("x")-x_delta)*Constants.width)/Constants.alpha);
+	   						float aux = (float) (Constants.x_robInit-((json.getDouble("x")-x_delta)*Constants.width)/Constants.alpha);
 	   						arg.x = (int)aux;
 	   					}
 	   					if(json.has("y")){
@@ -136,6 +136,9 @@ public class GreetingServer extends Thread {
 	   					}
 	   					if(json.has("beacon")){
 	   						arg.beacon = json.getLong("beacon");
+	   					}
+	   					if(json.has("state")){
+	   						arg.state = json.getInt("state");
 	   					}
 	   					
 	   					

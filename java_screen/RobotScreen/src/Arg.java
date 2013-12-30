@@ -8,6 +8,7 @@ public class Arg {
 	public float center;
 	public float right;
 	public float beacon;
+	public int state;
 	
 	public Arg(){
 		x = -1;
@@ -17,6 +18,7 @@ public class Arg {
 		center = -1;
 		right = -1;
 		beacon = -1;
+		state = -1;
 	}
 
 }
