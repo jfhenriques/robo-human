@@ -7,11 +7,20 @@
 #include <sys/ioctl.h>
 #include <linux/joystick.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+
 #include <string.h>
 #include <pthread.h>
 
+#include <jansson.h>
+
 
 #include "robfunc.h"
+
+
 
 #define DIVISOR		32767.0f
 #define MIN_VALUE	0.13f
@@ -150,8 +159,8 @@ int DetermineAction(int beaconToFollow, float *lPow, float *rPow)
 		*lPow = 0.0f;
 	}
 
-	printf("    L: % 1.5f | R: % 1.6f    \r", *lPow, *rPow);
-	fflush(stdout);
+	//printf("    L: % 1.5f | R: % 1.6f    \r", *lPow, *rPow);
+	//fflush(stdout);
 
 	return JOYS_OK;
 }
@@ -164,4 +173,69 @@ void CloseAndFreeJoystick(void)
 	(void) pthread_join(joys.thread_id, NULL);
 
 	printf("[JOYS] Cleaned\n");
+}
+
+
+
+
+
+
+int send_viewer_message(rob_viewer_cfg_t *viewer, char* msg, size_t size)
+{
+
+	if(    viewer
+		&& viewer->sockfd >= 0 )
+		return send(viewer->sockfd, msg, size, 0);
+
+	return -2;
+}
+
+
+void send_all_viewer_message(rob_cfg_t *cfg, char* msg, size_t size)
+{
+	if(    cfg
+		&& cfg->rob_viewers
+		&& cfg->rob_viewer_size > 0 )
+	{
+		size_t i;
+
+		for(i = 0; i < cfg->rob_viewer_size; i++)
+			send_viewer_message(&cfg->rob_viewers[i], msg, size);
+	}
+}
+
+#define MIN_SENSOR_TO_SEND	0.1f
+
+void send_all_viewer_state_message(rob_cfg_t *cfg, rob_state_t *state)
+{
+	if( !cfg || ! state )
+		return;
+
+	json_t *j_root = json_object();
+	char *json_text = NULL;
+
+	json_object_set_new( j_root, "state", json_integer( state->state ) );
+	json_object_set_new( j_root, "x", json_real( state->x ) );
+	json_object_set_new( j_root, "y", json_real( state->y ) );
+	json_object_set_new( j_root, "rotate", json_real( state->dir ) );
+
+	if( state->leftAvail && state->left >= MIN_SENSOR_TO_SEND )
+		json_object_set_new( j_root, "left", json_real( state->left ) );
+
+	if( state->rightAvail && state->right >= MIN_SENSOR_TO_SEND )
+		json_object_set_new( j_root, "right", json_real( state->right ) );
+
+	if( state->centerAvail && state->center >= MIN_SENSOR_TO_SEND )
+		json_object_set_new( j_root, "center", json_real( state->center ) );
+
+	if( state->beaconVis )
+		json_object_set_new( j_root, "beacon", json_real( state->beaconDir ) );
+
+	json_text = json_dumps(j_root, JSON_PRESERVE_ORDER);
+
+	send_all_viewer_message(cfg, json_text, strlen(json_text) + 1);
+
+
+	free( json_text );
+    json_decref( j_root );
 }

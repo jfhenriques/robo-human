@@ -53,6 +53,23 @@ typedef struct {
 } rob_cfg_t;
 
 
+
+
+typedef struct {
+	double x,y,dir;
+	float  left, right, center;
+
+	bool leftAvail, rightAvail, centerAvail;
+
+	bool beaconVis;
+	double beaconDir;
+
+	int state;
+} rob_state_t;
+
+
+
+
 int cfg_parser_parse(const char *cfg_name, rob_cfg_t *cfg);
 void cfg_parser_close(rob_cfg_t *cfg);
 void cfg_parser_connect_viewers(rob_cfg_t *cfg);
