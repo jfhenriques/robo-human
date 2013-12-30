@@ -171,8 +171,14 @@ int main(int argc, char *argv[])
 				{
 					rob_state.x = GetX();
 					rob_state.y = GetY();
-					rob_state.dir = GetDir();
 				}
+
+				// if( IsGPSDirReady() )
+				// 	rob_state.dir = GetDir();
+
+				if( IsCompassReady() )
+					rob_state.dir = GetCompassSensor();
+
 
 				if( ( rob_state.beaconVis = IsBeaconReady(beaconToFollow) ) )
 				{
@@ -184,6 +190,9 @@ int main(int argc, char *argv[])
 
 			//if(GetTime() % 2 == 0)
 				send_all_viewer_state_message(&rob_cfg, &rob_state);
+
+
+			RequestCompassSensor();
 
 			//Request Sensors for next cycle
 			if(GetTime() % 2 == 0) {

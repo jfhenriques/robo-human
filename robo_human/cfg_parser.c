@@ -239,16 +239,8 @@ void cfg_parser_close(rob_cfg_t *cfg)
 
 	if( cfg )
 	{
-		if( cfg->robo_name )
-			free( cfg->robo_name );
-
-		if( cfg->joys_dev )
-			free( cfg->joys_dev );
-
-		if( cfg->hostname )
-			free( cfg->hostname );
-
-		if( cfg->rob_viewers )
+		if(    cfg->rob_viewers
+			&& cfg->rob_viewer_size )
 		{
 			for(i = 0; i < cfg->rob_viewer_size; i++ )
 			{
@@ -261,7 +253,21 @@ void cfg_parser_close(rob_cfg_t *cfg)
 				if( cfg->rob_viewers[i].addrinfo )
 					freeaddrinfo( cfg->rob_viewers[i].addrinfo );
 			}
+
+			memset( cfg->rob_viewers, 0, cfg->rob_viewer_size * sizeof( rob_viewer_cfg_t ) );
+			free( cfg->rob_viewers );
 		}
+
+		if( cfg->robo_name )
+			free( cfg->robo_name );
+
+		if( cfg->joys_dev )
+			free( cfg->joys_dev );
+
+		if( cfg->hostname )
+			free( cfg->hostname );
+
+		memset( cfg, 0, sizeof( rob_cfg_t ) );
 	}
 }
 

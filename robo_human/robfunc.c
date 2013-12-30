@@ -168,6 +168,9 @@ int DetermineAction(int beaconToFollow, float *lPow, float *rPow)
 
 void CloseAndFreeJoystick(void)
 {
+	if( keep_going == 0 )
+		return;
+
 	keep_going = 0;
 
 	(void) pthread_join(joys.thread_id, NULL);
@@ -204,7 +207,7 @@ void send_all_viewer_message(rob_cfg_t *cfg, char* msg, size_t size)
 	}
 }
 
-#define MIN_SENSOR_TO_SEND	0.1f
+#define MIN_SENSOR_TO_SEND	0.35f
 
 void send_all_viewer_state_message(rob_cfg_t *cfg, rob_state_t *state)
 {

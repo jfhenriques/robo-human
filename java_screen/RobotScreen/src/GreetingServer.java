@@ -88,7 +88,9 @@ public class GreetingServer extends Thread {
 	   	            		continue;
 	   	            	
 	   	            	str = new String(buffer, 0, counter);
-	   	            	_pw.println(str);
+	   	            	
+	   	            	if( LOG_INPUT )
+	   	            		_pw.println(str);
 	   	            	
 	   					JSONObject json = new JSONObject(str);
 	   					if(json.has("x")){
