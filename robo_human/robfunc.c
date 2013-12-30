@@ -34,8 +34,9 @@ typedef struct {
 
 
 
-joys_t joys;
-float x,y;
+static joys_t joys;
+static float x,y;
+static bool keep_going = 1;
 
 static void *read_joys_values(void *);
 
@@ -66,10 +67,12 @@ int InitJoystick(const char *dev_name)
 			, joys.num_of_axis
 			, joys.num_of_buttons );
 
-	//fcntl( joys.fd, F_SETFL, O_NONBLOCK );   /* use non-blocking mode */
+	// select e pselect não funcionam com joystick correctamente, logo tem de ser usado non blocking mode
+	// de forma a se poder fazer a verificação se é preciso terminar a execução
 
-	pthread_create( &joys.thread_id, NULL, read_joys_values, NULL );
+	fcntl( joys.fd, F_SETFL, O_NONBLOCK );   /* use non-blocking mode */
 
+	(void) pthread_create( &joys.thread_id, NULL, read_joys_values, NULL );
 
 	return JOYS_OK;
 }
@@ -79,9 +82,10 @@ int InitJoystick(const char *dev_name)
 static void *read_joys_values(void *v)
 {
 	int unused __attribute__((unused));
-	(void)(v);
 
-	for(;;)
+	(void)(v);
+	
+	while(keep_going)
 	{
 				/* read the joystick state */
 		unused = read(joys.fd, &joys.js, sizeof(struct js_event));
@@ -96,7 +100,19 @@ static void *read_joys_values(void *v)
 						joys.button [ joys.js.number ] = joys.js.value;
 						break;
 		}
+
+		usleep(6000);
 	}
+
+	printf("[JOYS] Cleaning up\n");
+
+	close(joys.fd);
+
+	if( joys.axis )
+		free( joys.axis );
+
+	if( joys.button )
+		free( joys.button );
 
 	return NULL;
 }
@@ -138,4 +154,14 @@ int DetermineAction(int beaconToFollow, float *lPow, float *rPow)
 	fflush(stdout);
 
 	return JOYS_OK;
+}
+
+
+void CloseAndFreeJoystick(void)
+{
+	keep_going = 0;
+
+	(void) pthread_join(joys.thread_id, NULL);
+
+	printf("[JOYS] Cleaned\n");
 }

@@ -17,17 +17,23 @@
 
 #include "robfunc.h"
 
-#include "common.h"
+#include "cfg_parser.h"
+
+
+#define MAX_FILE_NAME_SIZE	256
+
+
 
 
 
 int main(int argc, char *argv[])
 {
-	char cfg[256]="config.json";
+	char cfg[MAX_FILE_NAME_SIZE]="config.json";
 	
 	float lPow,rPow;
 	int state=STOP, stoppedState=RUN;
 	int beaconToFollow=0;
+	int ret = 0;
 	rob_cfg_t rob_cfg;
 
 	 /* processing arguments */
@@ -36,7 +42,7 @@ int main(int argc, char *argv[])
 		if (strcmp(argv[1], "-cfg") == 0)
 		{
 		   strncpy(cfg, argv[2], 99);
-		   cfg[255]='\0';
+		   cfg[MAX_FILE_NAME_SIZE-1]='\0';
 		}
 		else
 		{
@@ -46,83 +52,100 @@ int main(int argc, char *argv[])
 		argv += 2;
 	}
 
-	rob_parse_config(cfg, &rob_cfg);
+	cfg_parser_parse(cfg, &rob_cfg);
+	// int i;
+	// for(i = 0; i < rob_cfg.rob_viewer_size; i++)
+	// 	printf("Viewer: %s:%d\n", rob_cfg.rob_viewers[i].hostname, rob_cfg.rob_viewers[i].port);
 
 	InitJoystick(rob_cfg.joys_dev);
 
+	cfg_parser_connect_viewers(&rob_cfg);
+
 	/* Connect Robot to simulator */
-	if(InitRobot(rob_cfg.robo_name, rob_cfg.robo_id, rob_cfg.hostname)==-1)
+	if( InitRobot(rob_cfg.robo_name, rob_cfg.robo_id, rob_cfg.hostname) == -1)
 	{
-	   printf( "%s Failed to connect\n", rob_cfg.robo_name); 
-	   exit(1);
+		ret = 1;
+		printf( "%s Failed to connect\n", rob_cfg.robo_name);
 	}
-	printf( "Connected: %s\n", rob_cfg.robo_name );
-	state=STOP;
-	while(1)
-	{
-		/* Reading next values from Sensors */
-		ReadSensors();
 
-		if(GetFinished()) /* Simulator has received Finish() or Robot Removed */
+	else
+	{
+		printf( "Connected: %s\n", rob_cfg.robo_name );
+		state=STOP;
+		while(1)
 		{
-			//TODO: enviar mensagem ao viewer
+			/* Reading next values from Sensors */
+			ReadSensors();
 
-		   printf(  "Exiting: %s\n", rob_cfg.robo_name );
-		   exit(0);
+			if(GetFinished()) /* Simulator has received Finish() or Robot Removed */
+			{
+				//TODO: enviar mensagem ao viewer
+
+			   printf(  "Exiting: %s\n", rob_cfg.robo_name );
+			   break;
+			}
+			if(state==STOP && GetStartButton()) state=stoppedState;  /* Restart     */
+			if(state!=STOP && GetStopButton())  {
+				stoppedState=state;
+				state=STOP; /* Interrupt */
+			}
+
+			switch (state)
+			{
+					 case RUN:    /* Go */
+			  if( GetVisitingLed() ) state = WAIT;
+					  if(GetGroundSensor()==0) {         /* Visit Target */
+						 SetVisitingLed(1);
+						 printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
+					  }
+
+					  else {
+						 DetermineAction(0,&lPow,&rPow);
+						 DriveMotors(lPow,rPow);
+					  }
+					  break;
+			 case WAIT: /* Wait for others to visit target */
+				 if(GetReturningLed()) state = RETURN;
+
+						 DriveMotors(0.0,0.0);
+						 break;
+			 case RETURN: /* Return to home area */
+				 if(GetGroundSensor()==1) { /* Finish */
+							 Finish();
+							 printf("%s found home at %d\n", rob_cfg.robo_name, GetTime());
+						 }
+						 else {
+							DetermineAction(1,&lPow,&rPow);
+							DriveMotors(lPow,rPow);
+						 }
+						 break;
+			}
+
+			Say(rob_cfg.robo_name);
+
+		 //Request Sensors for next cycle
+		  if(GetTime() % 2 == 0) {
+				RequestObstacleSensor(CENTER);
+
+				if(GetTime() % 8 == 0 || beaconToFollow == GetNumberOfBeacons())
+					RequestGroundSensor();
+				else
+					RequestBeaconSensor(beaconToFollow);
+
+			 }
+			 else {
+				RequestSensors(2, "IRSensor1", "IRSensor2");
+			 }
 		}
-		if(state==STOP && GetStartButton()) state=stoppedState;  /* Restart     */
-		if(state!=STOP && GetStopButton())  {
-			stoppedState=state;
-			state=STOP; /* Interrupt */
-		}
 
-		switch (state) { 
-				 case RUN:    /* Go */
-		  if( GetVisitingLed() ) state = WAIT;
-				  if(GetGroundSensor()==0) {         /* Visit Target */
-					 SetVisitingLed(1);
-					 printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
-				  }
-
-				  else {
-					 DetermineAction(0,&lPow,&rPow);
-					 DriveMotors(lPow,rPow);
-				  }
-				  break;
-		 case WAIT: /* Wait for others to visit target */
-			 if(GetReturningLed()) state = RETURN;
-
-					 DriveMotors(0.0,0.0);
-					 break;
-		 case RETURN: /* Return to home area */
-			 if(GetGroundSensor()==1) { /* Finish */
-						 Finish();
-						 printf("%s found home at %d\n", rob_cfg.robo_name, GetTime());
-					 }
-					 else {
-						DetermineAction(1,&lPow,&rPow);
-						DriveMotors(lPow,rPow);
-					 }
-					 break;
 	}
 
-		Say(rob_cfg.robo_name);
+	printf("Doing cleanup: %s\n", rob_cfg.robo_name);
 
-	 //Request Sensors for next cycle
-	  if(GetTime() % 2 == 0) {
-			RequestObstacleSensor(CENTER);
+	CloseAndFreeJoystick();
 
-			if(GetTime() % 8 == 0 || beaconToFollow == GetNumberOfBeacons())
-				RequestGroundSensor();
-			else
-				RequestBeaconSensor(beaconToFollow);
+	cfg_parser_close(&rob_cfg);
 
-		 }
-		 else {
-			RequestSensors(2, "IRSensor1", "IRSensor2");
-		 }
-
-	}
-	return 1;
+	return ret;
 }
 
