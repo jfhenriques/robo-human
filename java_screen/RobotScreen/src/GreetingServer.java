@@ -88,7 +88,9 @@ public class GreetingServer extends Thread {
 	   	            		continue;
 	   	            	
 	   	            	str = new String(buffer, 0, counter);
-	   	            	_pw.println(str);
+	   	            	
+	   	            	if( LOG_INPUT )
+	   	            		_pw.println(str);
 	   	            	
 	   					JSONObject json = new JSONObject(str);
 	   					if(json.has("x")){
@@ -102,7 +104,8 @@ public class GreetingServer extends Thread {
 	   						if(y_delta == -1){
 	   							y_delta = json.getDouble("y");
 	   						}
-	   						float aux = (float) (Constants.y_robInit+((json.getDouble("y")-y_delta)*Constants.height)/Constants.alpha);
+	   						float aux = (float) (Constants.y_robInit-((json.getDouble("y")-y_delta)*Constants.height)/Constants.alpha);
+	   						//float aux = (float) (Constants.y_robInit+((json.getDouble("y")-y_delta)*Constants.height)/Constants.alpha);
 	   						arg.y = (int)aux;
 	   						
 	   					}
