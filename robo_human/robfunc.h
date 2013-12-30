@@ -19,6 +19,7 @@
 
 int InitJoystick(const char * dev_name);
 int DetermineAction(int beaconToFollow, float *lPow, float *rPow);
+void CloseAndFreeJoystick(void);
 
 
-#endif
+#endif /* __ROBFUNC_H__ */

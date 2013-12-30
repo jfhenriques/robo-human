@@ -45,10 +45,10 @@ OBJECTS_DIR   = ./
 
 SOURCES       = mainRob.c \
 		robfunc.c \
-		json_parser.c
+		cfg_parser.c
 OBJECTS       = mainRob.o \
 		robfunc.o \
-		json_parser.o
+		cfg_parser.o
 DIST          = /usr/share/qt4/mkspecs/common/unix.conf \
 		/usr/share/qt4/mkspecs/common/linux.conf \
 		/usr/share/qt4/mkspecs/common/gcc-base.conf \
@@ -205,8 +205,8 @@ compiler_clean:
 
 ####### Compile
 
-json_parser.o: json_parser.c common.h
-	$(CC) -c $(CFLAGS) $(INCPATH) -o json_parser.o json_parser.c
+cfg_parser.o: cfg_parser.c cfg_parser.h
+	$(CC) -c $(CFLAGS) $(INCPATH) -o cfg_parser.o cfg_parser.c
 
 mainRob.o: mainRob.c ../libRobSock/RobSock.h \
 		robfunc.h
