@@ -165,7 +165,8 @@ void cfg_parser_connect_viewers(rob_cfg_t *cfg)
 		{
 			view = &(cfg->rob_viewers[i]);
 
-			if(    view->hostname
+			if(    view
+				&& view->hostname
 				&& view->port )
 			{
 				struct addrinfo hints, *res = NULL;
@@ -212,6 +213,7 @@ void cfg_parser_connect_viewers(rob_cfg_t *cfg)
 						printf("OK\n");
 
 						view->state = ROB_VIEWER_OK;
+						view = NULL;
 
 						continue;
 					}
@@ -219,13 +221,16 @@ void cfg_parser_connect_viewers(rob_cfg_t *cfg)
 
 			}
 
+			// Só chega aqui em caso de erro
+
 			if( view->addrinfo )
 			{
-				freeaddrinfo( cfg->rob_viewers[i].addrinfo );
+				freeaddrinfo( view->addrinfo );
 				view->addrinfo = NULL;
 			}
 
 			view->state = ROB_VIEWER_ERROR;
+			view = NULL;
 		}
 	}
 }

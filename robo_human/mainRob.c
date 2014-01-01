@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 			if(GetFinished()) /* Simulator has received Finish() or Robot Removed */
 			{
 			   printf(  "Exiting: %s\n", rob_cfg.robo_name );
+			   state = FINISHED;
+			   
 			   break;
 			}
 
@@ -155,41 +157,41 @@ int main(int argc, char *argv[])
 			//Say(rob_cfg.robo_name);
 
 
-				rob_state.state = state;
+			rob_state.state = state;
 
-				if( (rob_state.leftAvail = IsObstacleReady(LEFT)) )
-					rob_state.left = GetObstacleSensor(LEFT);
+			if( (rob_state.leftAvail = IsObstacleReady(LEFT)) )
+				rob_state.left = GetObstacleSensor(LEFT);
 
-				if( (rob_state.rightAvail = IsObstacleReady(RIGHT)) )
-					rob_state.right = GetObstacleSensor(RIGHT);
+			if( (rob_state.rightAvail = IsObstacleReady(RIGHT)) )
+				rob_state.right = GetObstacleSensor(RIGHT);
 
-				if( (rob_state.centerAvail = IsObstacleReady(CENTER)) )
-					rob_state.center = GetObstacleSensor(CENTER);
-
-
-				if(IsGPSReady())
-				{
-					rob_state.x = GetX();
-					rob_state.y = GetY();
-				}
-
-				// if( IsGPSDirReady() )
-				// 	rob_state.dir = GetDir();
-
-				if( IsCompassReady() )
-					rob_state.dir = GetCompassSensor();
+			if( (rob_state.centerAvail = IsObstacleReady(CENTER)) )
+				rob_state.center = GetObstacleSensor(CENTER);
 
 
-				if( ( rob_state.beaconVis = IsBeaconReady(beaconToFollow) ) )
-				{
-					beacon = GetBeaconSensor(beaconToFollow);
+			if(IsGPSReady())
+			{
+				rob_state.x = GetX();
+				rob_state.y = GetY();
+			}
 
-					if( ( rob_state.beaconVis = beacon.beaconVisible ) )
-						rob_state.beaconDir = beacon.beaconDir;
-				}
+			// if( IsGPSDirReady() )
+			// 	rob_state.dir = GetDir();
 
-			//if(GetTime() % 2 == 0)
-				send_all_viewer_state_message(&rob_cfg, &rob_state);
+			if( IsCompassReady() )
+				rob_state.dir = GetCompassSensor();
+
+
+			if( ( rob_state.beaconVis = IsBeaconReady(beaconToFollow) ) )
+			{
+				beacon = GetBeaconSensor(beaconToFollow);
+
+				if( ( rob_state.beaconVis = beacon.beaconVisible ) )
+					rob_state.beaconDir = beacon.beaconDir;
+			}
+
+
+			send_all_viewer_state_message(&rob_cfg, &rob_state);
 
 
 			RequestCompassSensor();
@@ -210,6 +212,8 @@ int main(int argc, char *argv[])
 				RequestSensors(2, "IRSensor1", "IRSensor2");
 			}
 		}
+
+		send_all_viewer_state_message(&rob_cfg, &rob_state);
 
 	}
 
