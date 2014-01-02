@@ -30,7 +30,7 @@ public class GreetingServer extends Thread {
 		this._const = constants;
 		
 		try {
-			_pw =  new PrintWriter("input_log_ " + id + ".txt", "UTF-8");
+			_pw =  new PrintWriter("input_log_" + id + ".txt", "UTF-8");
 
 			if( LOG_INPUT )
 				_in = new DataInputStream(_server.getInputStream());
@@ -70,8 +70,6 @@ public class GreetingServer extends Thread {
 		while(true)
 		{
 			try {
-				//String t =_in.readUTF();
-
 				counter = 0;
 
 				while(true)
@@ -120,6 +118,11 @@ public class GreetingServer extends Thread {
 	}
 	
 	
+	private static float _sensor_helper(JSONObject json, String name) throws JSONException
+	{
+		return ((4.0f - (float)json.getDouble(name)) * 15.0f);
+	}
+	
 	public static Arg processJSON(Constants constants, JSONObject json) throws JSONException
 	{
 		Arg arg = new Arg();
@@ -149,7 +152,7 @@ public class GreetingServer extends Thread {
 			if(constants.y_delta == null)
 				constants.y_delta = dAux;
 
-			arg.y = (int)(constants.y_robInit + ((dAux - constants.y_delta) * constants.robot_delta_displacement));
+			arg.y = (int)(constants.y_robInit - ((dAux - constants.y_delta) * constants.robot_delta_displacement));
 
 		}
 		
@@ -170,33 +173,16 @@ public class GreetingServer extends Thread {
 		}
 		
 		if(json.has("left"))
-		{
-			dAux = json.getDouble("left");
-			dAux = (4.0 - dAux) * 5.0;
-			
-			arg.left = (float) dAux;
-		}
+			arg.left = _sensor_helper(json, "left");
 		
 		if(json.has("right"))
-		{
-			dAux = json.getDouble("right");
-			dAux = (4.0 - dAux) * 5.0;
-			
-			arg.right = (float) dAux;
-		}
+			arg.right = _sensor_helper(json, "right");
 		
 		if(json.has("center"))
-		{
-			dAux = json.getDouble("center");
-			dAux = (4.0 - dAux) * 5.0;
-			
-			arg.center = (float) dAux;
-		}
+			arg.center = _sensor_helper(json, "center");
 		
 		if(json.has("beacon"))
-		{
 			arg.beacon = (float) json.getDouble("beacon");
-		}
 	
 		
 		return arg;

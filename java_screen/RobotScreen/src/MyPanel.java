@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,21 +44,28 @@ class MyPanel extends JPanel{
 	
 	boolean rob_size_acquired = false;
 	
-	
-	
 	int state;
 	static public enum ObstacleSensor  {LEFT, CENTER, RIGHT}
 	
-    public MyPanel(Constants constants) {
+	
+	private ArrayList<Float> angle1 = new ArrayList<Float>();
+	private ArrayList<Float> angle2 = new ArrayList<Float>();
+	private ArrayList<Float> dist = new ArrayList<Float>();
+	private ArrayList<Integer> sensorX = new ArrayList<Integer>();
+	private ArrayList<Integer> sensorY = new ArrayList<Integer>();
+	
+	
+    public MyPanel(Constants constants)
+    {
     	setBorder(BorderFactory.createLineBorder(Color.black));
     	
     	_const = constants;
-    	bufferedImage = new BufferedImage(_const.width,_const.height, BufferedImage.TYPE_INT_RGB);
+    	bufferedImage = new BufferedImage(_const.width, _const.height, BufferedImage.TYPE_INT_RGB);
 
-    	for(int i = 0; i < bufferedImage.getHeight(); i++){
-        	for(int j = 0; j < bufferedImage.getWidth(); j++){
+    	for(int i = 0; i < bufferedImage.getHeight(); i++)
+    	{
+        	for(int j = 0; j < bufferedImage.getWidth(); j++)
     			bufferedImage.setRGB(j, i,(new Color(0, 0, 0)).getRGB());
-        	}
         }
     	robo_1 = Toolkit.getDefaultToolkit().getImage("rob_run.png");
     	robo_2 = Toolkit.getDefaultToolkit().getImage("rob_return.png");
@@ -68,12 +76,17 @@ class MyPanel extends JPanel{
 
 
     public Dimension getPreferredSize() {
+    	
         return new Dimension(Constants.WINDOW_WIDTH,Constants.WINDOW_HEIGHT);
         
     }
     
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g); 
+    protected void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        
+    	g.setColor(Color.BLACK);
+    	g.fillRect(0, 0, getWidth(), getHeight());
         
         Rectangle rect = getBounds();
 		AffineTransform at = new AffineTransform();
@@ -85,7 +98,7 @@ class MyPanel extends JPanel{
 			whCenter = (int) (rect.getHeight()/2);
 
 		at.translate(wwCenter - _const.x_rob, whCenter - _const.y_rob);
-		at.rotate(Math.toRadians(-90 - _const.rot_rob), _const.x_rob, _const.y_rob);
+		at.rotate(Math.toRadians(-90.0f + _const.rot_rob), _const.x_rob, _const.y_rob);
 
 		g2d.drawImage(bufferedImage, at, null);
 		
@@ -100,11 +113,13 @@ class MyPanel extends JPanel{
 
     } 
     
-    public void updateBuffer(){
-    	for(int i = 0; i < _const.height; i++){
-        	for(int j = 0; j < _const.width; j++){
-
-    			if(robo_height/2 >= Math.sqrt(
+    public void updateBuffer()
+    {
+    	for(int i = 0; i < _const.height; i++)
+    	{
+        	for(int j = 0; j < _const.width; j++)
+        	{
+    			if(half_robo_height >= Math.sqrt(
 				    					((_const.x_rob-j)*(_const.x_rob-j))+
 				    					((_const.y_rob-i)*(_const.y_rob-i))) )
     			{
@@ -125,20 +140,34 @@ class MyPanel extends JPanel{
     	{
     		rob_size_acquired = true;
     		
-        	half_robo_width = (float) (_const.robo_scale + robo_width) / 2.0f;
-        	half_robo_height = (float) (_const.robo_scale + robo_height) / 2.0f;
+        	half_robo_width = robo_width/ 2.0f;
+        	half_robo_height = robo_height/ 2.0f;
     	}
     }
    
 
-    public void updateBuffer(Arg arg){
+    public void updateBuffer(Arg arg)
+    {
+    	double ang,dTmp,angRad,angRad05;
+    	float fTmpI,fTmpJ,
+    		  tRobInitI,tRobInitJ,
+    		  fConstI,fConstJ,
+    		  argR2,constR2,
+    		  tAngle1,tAngle2,thDist,
+    		  tSqrtZ,atanYX,atan2ArgXY,
+    		  a1Rad,a2Rad,
+    		  t5RobHeight,
+    		  t5RobHeight1;
+    	int x,y,tSensX,tSensY,i,j;
     	
+    	t5RobHeight = robo_height * 5.0f;
+    	t5RobHeight1 = t5RobHeight -1;
     	
     	if( !this.rob_size_acquired )
     		this.reset_robot_size();
     	
     	//update state 
-    	if(arg.state != -1)
+    	if( arg.state >= 0 )
     		state = arg.state;
     	
     	//update rotate
@@ -153,7 +182,7 @@ class MyPanel extends JPanel{
 				_const.rot_rob += 360.0;
 		}
 		
-		double ang = _const.rot_rob + arg.beacon;
+		ang = _const.rot_rob + arg.beacon;
 		
     	if(ang > 180.0)
     		ang -= 360.0;
@@ -161,131 +190,175 @@ class MyPanel extends JPanel{
     	if(ang < -180.0)
     		ang += 360.0;
     	
+    	angRad = Math.toRadians(ang);
+    	angRad05 = Math.toRadians(ang-0.5);
     	
-		ArrayList<Float> angle1 = new ArrayList<Float>();
-		ArrayList<Float> angle2 = new ArrayList<Float>();
-		ArrayList<Float> dist = new ArrayList<Float>();
-		ArrayList<Integer> sensorX = new ArrayList<Integer>();
-		ArrayList<Integer> sensorY = new ArrayList<Integer>();
+    	
+		angle1.clear();
+		angle2.clear();
+		dist.clear();
+		sensorX.clear();
+		sensorY.clear();
 		
-		if(arg.left != -1)
+		
+		if( arg.left > -1 )
 		{
 			angle1.add(_const.rot_rob + 90.0f);
 			angle2.add(_const.rot_rob + 30.0f);
 		} else {
-			angle1.add(-500.0f);
-			angle2.add(-500.0f);
+			angle1.add(Float.MIN_VALUE);
+			angle2.add(Float.MIN_VALUE);
 		}
 		
 		dist.add(arg.left);
-		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot + 60))*half_robo_height));
-		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot + 60))*half_robo_height));
+		
+		dTmp = Math.toRadians(arg.rot + 60);
+		sensorX.add((int) (arg.x + Math.cos(dTmp)*half_robo_height));
+		sensorY.add((int) (arg.y - Math.sin(dTmp)*half_robo_height));
 		
 		if(arg.center != -1)
 		{
 			angle1.add(_const.rot_rob + 30.0f);
 			angle2.add(_const.rot_rob - 30.0f);
 		} else {
-			angle1.add(-500.0f);
-			angle2.add(-500.0f);
+			angle1.add(Float.MIN_VALUE);
+			angle2.add(Float.MIN_VALUE);
 		}
 		
 		dist.add(arg.center);
-		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot))*half_robo_height));
-		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot))*half_robo_height));
+		
+		dTmp = Math.toRadians(arg.rot);
+		sensorX.add((int) (arg.x + Math.cos(dTmp)*half_robo_height));
+		sensorY.add((int) (arg.y - Math.sin(dTmp)*half_robo_height));
 		
 		if(arg.right != -1)
 		{
 			angle1.add(_const.rot_rob - 30.0f);
 			angle2.add(_const.rot_rob - 90.0f);
 		} else {
-			angle1.add(-500.0f);
-			angle2.add(-500.0f);
+			angle1.add(Float.MIN_VALUE);
+			angle2.add(Float.MIN_VALUE);
 		}
+		
 		dist.add(arg.right);
-		sensorX.add((int) (arg.x + Math.cos(Math.toRadians(arg.rot - 60))*half_robo_height));
-		sensorY.add((int) (arg.y - Math.sin(Math.toRadians(arg.rot - 60))*half_robo_height));
 		
-		for(int i = 0; i < angle1.size(); i++)
+		dTmp = Math.toRadians(arg.rot - 60);
+		sensorX.add((int) (arg.x + Math.cos(dTmp)*half_robo_height));
+		sensorY.add((int) (arg.y - Math.sin(dTmp)*half_robo_height));
+		
+		for(i = 0; i < angle1.size(); i++)
 		{
-			if(angle1.get(i) >= 180.0f)
-	    		angle1.set(i, angle1.get(i)-360.0f);
+			tAngle1 = angle1.get(i);
+			tAngle2 = angle2.get(i);
 			
-	    	if(angle1.get(i) <= -180.0f)
-	    		angle1.set(i, angle1.get(i)+360.0f);
+			if(tAngle1 >= 180.0f)
+	    		angle1.set(i, tAngle1 - 360.0f);
+			else
+	    	if(tAngle1 <= -180.0f)
+	    		angle1.set(i, tAngle1 + 360.0f);
 			
-	    	if(angle2.get(i) >= 180.0f)
-	    		angle2.set(i, angle1.get(i)-360.0f);
-	    	
-	    	if(angle2.get(i) <= -180.0f)
-	    		angle2.set(i, angle1.get(i)+360.0f);
+	    	if(tAngle2 >= 180.0f)
+	    		angle2.set(i, tAngle2 - 360.0f);
+	    	else
+	    	if(tAngle2 <= -180.0f)
+	    		angle2.set(i, tAngle2 + 360.0f);
 		}
 
 
 		
-    	for(int i = 0; i < _const.height; i++){
-        	for(int j = 0; j < _const.width; j++){
+    	for(i = 0; i < _const.height; i++)
+    	{
+    		fTmpI = (arg.y-i)*(arg.y-i);
+    		fConstI = (_const.y_rob-i)*(_const.y_rob-i);
+    		
+    		tRobInitI = (_const.y_robInit-i) * (_const.y_robInit-i);
+    		
+        	for(j = 0; j < _const.width; j++)
+        	{
+        		fTmpJ = (arg.x - j) * (arg.x - j);
+        		tRobInitJ = (_const.x_robInit-j) * (_const.x_robInit-j);
+        		
+        		argR2 = (float) Math.sqrt(fTmpJ + fTmpI);
+
         		
         		//update route
-        		if(arg.x != -1 && arg.y != -1){
-        			if(Math.abs(arg.x - _const.x_rob) < 5 && Math.abs(arg.y - _const.y_rob) < 5 ){
+        		if(    arg.x != -1 
+        			&& arg.y != -1 )
+        		{
+        			
+        			if(    Math.abs(arg.x - _const.x_rob) < 5.0 
+        				&& Math.abs(arg.y - _const.y_rob) < 5.0 )
+        			{
         				//shortest distance
-            			if(robo_height/2 >= Math.sqrt(((arg.x-j)*(arg.x-j))+
-            					((arg.y-i)*(arg.y-i)))){
+            			if( half_robo_height >= argR2 )
             				bufferedImage.setRGB(j, i,(new Color(255, 255, 255)).getRGB());
-            			}	
-            		}else{
-            			if(robo_height/2 >= Math.sqrt(((_const.x_rob-j)*(_const.x_rob-j))+
-            					((_const.y_rob-i)*(_const.y_rob-i))) && (robo_height/2)-1.5 <= Math.sqrt(((_const.x_rob-j)*(_const.x_rob-j))+
-            	    					((_const.y_rob-i)*(_const.y_rob-i)))){
-            				bresenham_algorithm(j,i,arg.x+(j-_const.x_rob), arg.y+(i-_const.y_rob), new Color(255,255,255));
-            			}
+            		}
+        			else
+        			{
+        				fConstJ = (_const.x_rob - j) * (_const.x_rob - j);
+        				constR2 = (float) Math.sqrt(fConstJ + fConstI);
+        				
+            			if(     half_robo_height      >= constR2
+            				&& (half_robo_height-1.5) <= constR2 )
+            				bresenham_algorithm(j, i, (int)(arg.x+(j-_const.x_rob)), (int)(arg.y+(i-_const.y_rob)), new Color(255,255,255));
             		}
         		}
         		
         		//update obstacles
-        		for(int z = 0; z < angle1.size(); z++){
-        			if(angle1.get(z) == -500)
-        				continue;
-        			int y = sensorY.get(z)-i;
-            		int x = j-sensorX.get(z);
-            		if(y == 0)
-            			y = 1;
-            		
-            		if(x == 0)
-            			x = 1;
-            		
-            		if(dist.get(z)/2 >= Math.sqrt(((sensorX.get(z)-j)*(sensorX.get(z)-j))+((sensorY.get(z)-i)*(sensorY.get(z)-i))) && 
-        				(dist.get(z)/2)-3 <= Math.sqrt(((sensorX.get(z)-j)*(sensorX.get(z)-j))+((sensorY.get(z)-i)*(sensorY.get(z)-i)))
-        				
-        				){
-            			if(angle2.get(z) > 120 &&( Math.toRadians(angle1.get(z)) >= Math.atan2(y, x) || Math.toRadians(angle2.get(z)) <=  Math.atan2(y, x) )){
-            				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
-            			}else if(Math.toRadians(angle1.get(z)) >= Math.atan2(y, x) && Math.toRadians(angle2.get(z)) <=  Math.atan2(y, x)){
-            				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
-            			}
-            		}
+        		for(int z = 0; z < angle1.size(); z++)
+        		{
+        			tAngle1 = angle1.get(z);
         			
+        			if(tAngle1 < -9999.0f)
+        				continue;
+        			
+        			tSensX = sensorX.get(z);
+        			tSensY = sensorY.get(z);
+        			thDist = dist.get(z)/2.0f;
+        			
+        			tSqrtZ = (float) Math.sqrt( ((tSensX-j)*(tSensX-j)) + ((tSensY-i)*(tSensY-i)) );
+        			
+        			y = tSensY-i;
+            		x = j-tSensX;
+            		
+            		if(y == 0) y = 1;
+            		if(x == 0) x = 1;
+            		
+            		if(     thDist    >= tSqrtZ
+            			&& (thDist-3) <= tSqrtZ )
+            		{
+            			tAngle2 = angle2.get(z);
+            			
+            			a1Rad = (float) Math.toRadians(tAngle1);
+            			a2Rad = (float) Math.toRadians(tAngle2);
+            			atanYX = (float) Math.atan2(y, x);
+            			
+            			if(    ( a1Rad >= atanYX && a2Rad <= atanYX )
+            				|| (    tAngle2 > 120
+            					 && ( a1Rad >= atanYX || a2Rad <= atanYX ) ) )
+            				bufferedImage.setRGB(j, i,(new Color(255, 0, 0)).getRGB());
+            		}
         		}
         		
         		//update initposition
-        		if(10 >= Math.sqrt(((_const.x_robInit-j)*(_const.x_robInit-j))+((_const.y_robInit-i)*(_const.y_robInit-i)))){
+        		if(10 >= Math.sqrt(tRobInitJ + tRobInitI))
         			bufferedImage.setRGB(j, i,(new Color(0, 255, 255)).getRGB());
-        		}
+        		
         		//update beacon
-        		if(arg.beacon != -1){
-        			if(5*robo_height>= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i))) && 
-            				(5*robo_height)-1 <= Math.sqrt(((arg.x-j)*(arg.x-j))+((arg.y-i)*(arg.y-i)))
-            				&& Math.toRadians(ang) >= Math.atan2(arg.y-i, j-arg.x)
-            				&& Math.toRadians(ang-0.5) <= Math.atan2(arg.y-i, j-arg.x)){
-            			bresenham_algorithm(arg.x, arg.y, j, i, new Color(0,255,0));
-            		}
+        		if(arg.beacon != -1)
+        		{
+        			if(    t5RobHeight  >= argR2
+        			    && t5RobHeight1 <= argR2
+            		    && angRad   >= (atan2ArgXY = (float) Math.atan2(arg.y-i, j-arg.x))
+            		    && angRad05 <= atan2ArgXY )
+            			bresenham_algorithm((int)arg.x, (int)arg.y, j, i, new Color(0,255,0));
         		}
         	}
         }
     	
     	//update position
-    	if(arg.x != -1 && arg.y != -1){
+    	if(arg.x != -1 && arg.y != -1)
+    	{
     		_const.x_rob = arg.x;
     		_const.y_rob = arg.y;
     	}
@@ -294,7 +367,8 @@ class MyPanel extends JPanel{
     }
     
     //bresenham line algorithm
-    private void bresenham_algorithm(int x,int y,int x2, int y2, Color color) {
+    private void bresenham_algorithm(int x,int y,int x2, int y2, Color color)
+    {
         int w = x2 - x ;
         int h = y2 - y ;
         int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0 ;
@@ -318,7 +392,8 @@ class MyPanel extends JPanel{
         	}
           //  putpixel(x,y,color) ;
             numerator += shortest ;
-            if (!(numerator<longest)) {
+            if (!(numerator<longest))
+            {
                 numerator -= longest ;
                 x += dx1 ;
                 y += dy1 ;
@@ -339,6 +414,7 @@ class MyPanel extends JPanel{
 		
 		try
 		{
+			frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			frame.add(panel);
 			panel.setFocusable(true);
 			panel.requestFocusInWindow();
@@ -347,7 +423,7 @@ class MyPanel extends JPanel{
 			frame.setVisible(true);
 			
 			
-			BufferedReader in = new BufferedReader(new FileReader("input_log_ 6.txt"));
+			BufferedReader in = new BufferedReader(new FileReader("input_log_good.txt"));
 			String line;
 	
 			while (in.ready())

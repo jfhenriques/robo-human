@@ -190,7 +190,6 @@ int main(int argc, char *argv[])
 					rob_state.beaconDir = beacon.beaconDir;
 			}
 
-
 			send_all_viewer_state_message(&rob_cfg, &rob_state);
 
 

@@ -1,8 +1,8 @@
 
 public class Arg {
 	
-	public int x;
-	public int y;
+	public float x;
+	public float y;
 	public float rot;
 	public float left;
 	public float center;
