@@ -1,1 +1,67 @@
-ROBO README
+Human controlled robot with Cyber Tools
+
+Robótica, FEUP
+
+João Henriques
+Joaquim Oliveira
+
+
+O trabalho consite em duas partes distintas, estando apenas preparado para correr em Linux (testado em Ubuntu 12.10 x64)
+1) Robot controlado por joystick
+2) Screen em java, que simula a visão do conhecimento do robot.
+
+Para correr o robot, basta copiar o directório "robo_human" para o directório do CybertTools, e de seguida "cd robo_human && make",
+tendo em consideração que o CyberTools já se encontra compilado e preparado para funcionar.
+
+Ao contrário do sample que é enviado junto com o cyber tools, este robot não é configurável pela linha de comandos, mas sim através de um ficheiro de configuração formatado em JSON.
+Apenas existe uma flag "-cfg", onde é possível especificar o caminho do ficheiro de configuração.
+Por defeito é procurado pelo ficheiro "config.json" no mesmo directório que o executável.
+
+
+De seguida segue-se um exmplo do ficheiro de configuração:
+
+{
+	"joystickDevice": "/dev/input/js0",
+	"roboName": "R1",
+	"roboId": 1,
+	"hostname": "localhost",
+	"viewers": [
+		{
+			"host": "localhost",
+			"port": 5555
+		}
+	]
+}
+
+joystickDevice: o caminho para o dispositivo do joystick (apenas foi testado o contrlador xbox360 para windows com cabo)
+roboName: o nome do robot
+roboId: O id do robot
+hostname: O host no qual o simulador do cyber tools se encontra a correr, se for na mesma máquina deverá ser localhost
+viewers: array com vários viewers para se ligar e enviar a localização do robot.
+
+Tanto o ficheiro de configuração como qualquer campo são facultativos, pelo que serão usado os valores por defeito (os mesmos acima descritos) quando estiverem em falta.
+Não é obrigatório configurar os viewers, pelo que se não for especificado nenhum, a aplicação não tentará se conectar a nenhum viewer.
+
+
+para correr o executável, basta inserir o seguinte comando na consola:
+LD_LIBRARY_PATH=../libRobSock/ ./robhuman [-cfg CFG_FILE]
+
+
+A aplicação em JAVA é bastanta simples de executar, não precisando de qualquer configuração.
+Basta importar o projecto para o eclipse, possivelmente corrigir a importação da biblioteca "java-json.jar" que se encontra no mesmo directório do projecto do java (java_screen), e executar o entry point (main) que se encontra no ficheiro "RobotScreen.java".
+
+A aplicação entrará em mode de escuta, e lançara uma nova janela por cada conexão recebida, podendo ficar a correr indefinidamente sem ser preciso terminar nem voltar a lançar novamente.
+
+Por defeito, a mesma irá registar em disco todas as mensagens recebidas num ficheiro "input_log_ID.txt" no msmo directório do projecto. Esta funcionalidade pode ser desacticada
+modificado a variável estática "LOG_INPUT" para false em "GreetingServer.java" e compilando a aplicação novamente. O id do log é simplesmente uma variável que é incrementada sempre que uma nova ligação é recebida, pelo que depois de terminar a aplicação e esta ser novamente lançada, os logs antigos serão reescritos.
+
+Para facilitar o lançamento da aplicação, foi incluido um runnable JAR que se encontra no mesmo directório da aplicação e pode ser lançado com o seguinte comando:
+java -jar Screen.jar
+
+Os logs acima descritos, podem ser usados para fazer o replay. Bastando para isso lançar executar o "main" que se encontra em "MyPanel.java", bastando mudar:
+BufferedReader in = new BufferedReader(new FileReader("input_log_good.txt"));
+para o nome do log que é pretendido que seja executado.
+
+
+Nota: Uma vez que o viewer conta com os sensores do robot para saber a sua posição, estes não podem conter ruído, pelo que é importante colocar a zeros todos os valroes do ruído no simulador, caso contrário será impossível controlar o robot.
+

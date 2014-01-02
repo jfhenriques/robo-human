@@ -1,7 +1,7 @@
 *.class
-java_screen/.metadata/
-java_screen/RobotScreen/input_log*
-java_screen/bin/
+.metadata
+RobotScreen/input_log*
+bin/
 .gitignore~
 robo_human_tmp
 robo_human/robhuman
