@@ -13,7 +13,7 @@
 
 
 #define JSON_KEY_JOYSTICK		"joystickDevice"
-#define JSON_KEY_ROBO_ID		"roboId"
+#define JSON_KEY_ROBO_POS		"roboPos"
 #define JSON_KEY_ROBO_NAME		"roboName"
 #define JSON_KEY_HOSTNAME		"hostname"
 #define JSON_KEY_VIEWERS		"viewers"
@@ -109,7 +109,7 @@ int cfg_parser_parse(const char *cfg_name, rob_cfg_t *cfg)
 	cfg->robo_name = _json_string_helper(j_root, JSON_KEY_ROBO_NAME, DEF_ROBONAME);
 	cfg->hostname = _json_string_helper(j_root, JSON_KEY_HOSTNAME, DEF_HOSTNAME);
 
-	cfg->robo_id = _json_integer_helper(j_root, JSON_KEY_ROBO_ID, DEF_ROBOID);
+	cfg->robo_pos = _json_integer_helper(j_root, JSON_KEY_ROBO_POS, DEF_ROBOPOS);
 
 
 	array = json_object_get(j_root, JSON_KEY_VIEWERS);

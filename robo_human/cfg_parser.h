@@ -8,7 +8,7 @@
 #define DEF_JOY_DEV			"/dev/input/js0"
 #define DEF_HOSTNAME		"localhost"
 #define DEF_ROBONAME		"R1"
-#define DEF_ROBOID			1
+#define DEF_ROBOPOS			1
 
 #define DEF_VIEWER_PORT		5555
 
@@ -41,7 +41,6 @@ typedef struct {
 
 	char *robo_name;
 
-	int robo_id;
 	int robo_pos;
 
 	char *joys_dev;

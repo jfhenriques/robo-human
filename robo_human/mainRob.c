@@ -8,10 +8,16 @@
  * please see http://microrato.ua.pt/ or contact us.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+
+#include <sys/time.h> 
+#include <time.h>
+#include <unistd.h>
+
 
 #include "RobSock.h"
 
@@ -22,9 +28,16 @@
 
 #define MAX_FILE_NAME_SIZE	256
 
+#define USEC_TO_SEC(a)		(((double)a)/1000000.0)
 
 
+static double _get_elapsed_secs(struct timeval *t1, struct timeval *t2)
+{
+	if( !t1 || !t2 )
+		return -1.0f;
 
+	return (((double)t2->tv_sec) + USEC_TO_SEC(t2->tv_usec)) - (((double)t1->tv_sec) + USEC_TO_SEC(t1->tv_usec));
+}
 
 
 int main(int argc, char *argv[])
@@ -39,6 +52,9 @@ int main(int argc, char *argv[])
 	rob_state_t rob_state;
 	struct beaconMeasure beacon;
 	int totalBeacons = 0,curGroundSensor = -1;
+	double elapsed1 = 0.0, elapsed2 = 0.0, realTotal = 0.0;
+	struct timeval t1, t2, t3;
+	bool firstTimeStart = 1;
 
 	memset(&rob_state, 0, sizeof(rob_state_t));
 
@@ -69,7 +85,7 @@ int main(int argc, char *argv[])
 	cfg_parser_connect_viewers(&rob_cfg);
 
 	/* Connect Robot to simulator */
-	if( InitRobot(rob_cfg.robo_name, rob_cfg.robo_id, rob_cfg.hostname) == -1)
+	if( InitRobot(rob_cfg.robo_name, rob_cfg.robo_pos, rob_cfg.hostname) == -1)
 	{
 		ret = 1;
 		printf( "%s Failed to connect\n", rob_cfg.robo_name);
@@ -89,13 +105,32 @@ int main(int argc, char *argv[])
 
 			if(GetFinished()) /* Simulator has received Finish() or Robot Removed */
 			{
-			   printf(  "Exiting: %s\n", rob_cfg.robo_name );
-			   state = FINISHED;
-			   
-			   break;
+				printf(  "Exiting: %s\n", rob_cfg.robo_name );
+				state = FINISHED;
+
+				gettimeofday(&t3, NULL);
+
+				elapsed2 = _get_elapsed_secs(&t2, &t3);
+				realTotal = _get_elapsed_secs(&t1, &t3);
+
+				printf("to beacon | to start | total | real total\n");
+				printf("& %.2f & %.2f & %.2f & %.2f \n", elapsed1, elapsed2, elapsed1 + elapsed2, realTotal);
+
+				break;
 			}
 
-			if(state==STOP && GetStartButton()) state=stoppedState;  /* Restart     */
+			if(state==STOP && GetStartButton()) 
+			{
+				state=stoppedState;  /* Restart     */
+
+				if( firstTimeStart )
+				{
+					firstTimeStart = 0;
+					printf("Started counting elapsed time\n");
+					
+					gettimeofday(&t1, NULL);
+				}
+			}
 			if(state!=STOP && GetStopButton())  {
 				stoppedState=state;
 				state=STOP; /* Interrupt */
@@ -108,18 +143,30 @@ int main(int argc, char *argv[])
 				case RUN:    /* Go */
 					
 					if( GetVisitingLed() )
-						state = WAIT;
-
-					if( curGroundSensor == beaconToFollow )
 					{
-						beaconToFollow++;
-						SetVisitingLed(1);
-						printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
-					}
-					else {
+						gettimeofday(&t2, NULL);
 
-						DetermineAction(beaconToFollow, &lPow, &rPow);
-						DriveMotors(lPow, rPow);
+						elapsed1 = _get_elapsed_secs(&t1, &t2);
+
+						printf("Elapsed from origin to beacon: %f\n", elapsed1);
+
+
+						state = WAIT;
+						DriveMotors(0.0,0.0);
+					}
+					else
+					{
+						if( curGroundSensor == beaconToFollow )
+						{
+							beaconToFollow++;
+							SetVisitingLed(1);
+							printf("%s visited target at %d\n", rob_cfg.robo_name, GetTime());
+						}
+						else {
+
+							DetermineAction(beaconToFollow, &lPow, &rPow);
+							DriveMotors(lPow, rPow);
+						}
 					}
 				
 					break;
@@ -141,12 +188,11 @@ int main(int argc, char *argv[])
 				case WAIT: /* Wait for others to visit target */
 
 					if(GetReturningLed())
-						state = RETURN;
-
-					else
 					{
 						SetVisitingLed(0);
-						state = RUN;
+						state = RETURN;
+
+						gettimeofday(&t2, NULL);
 					}
 
 					DriveMotors(0.0,0.0);

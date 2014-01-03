@@ -1,6 +1,6 @@
 *.class
 .metadata
-RobotScreen/input_log*
+java_screen/input_log*
 bin/
 .gitignore~
 robo_human_tmp

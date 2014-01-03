@@ -23,7 +23,7 @@ De seguida segue-se um exmplo do ficheiro de configuração:
 {
 	"joystickDevice": "/dev/input/js0",
 	"roboName": "R1",
-	"roboId": 1,
+	"roboPos": 1,
 	"hostname": "localhost",
 	"viewers": [
 		{
@@ -35,7 +35,7 @@ De seguida segue-se um exmplo do ficheiro de configuração:
 
 joystickDevice: o caminho para o dispositivo do joystick (apenas foi testado o contrlador xbox360 para windows com cabo)
 roboName: o nome do robot
-roboId: O id do robot
+roboPos: A posição inicial do robot
 hostname: O host no qual o simulador do cyber tools se encontra a correr, se for na mesma máquina deverá ser localhost
 viewers: array com vários viewers para se ligar e enviar a localização do robot.
 
@@ -63,5 +63,5 @@ BufferedReader in = new BufferedReader(new FileReader("input_log_good.txt"));
 para o nome do log que é pretendido que seja executado.
 
 
-Nota: Uma vez que o viewer conta com os sensores do robot para saber a sua posição, estes não podem conter ruído, pelo que é importante colocar a zeros todos os valroes do ruído no simulador, caso contrário será impossível controlar o robot.
+Nota: Uma vez que o viewer conta com os sensores do robot para determinar a sua posição, estes não podem conter ruído, pelo que é importante colocar a zeros todos os valores do ruído no simulador, caso contrário será impossível controlar o robot.
 

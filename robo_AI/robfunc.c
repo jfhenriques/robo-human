@@ -151,12 +151,10 @@ if(beaconReady && beacon.beaconVisible && beacon.beaconDir>20.0) { /* turn to Be
    }else    if(right>1.5) {
         *lPow=0.0;
         *rPow=0.1;
-	 printf("right");
     }
     else if(left>1.5) {
         *lPow=0.1;
         *rPow=0.0;
- 	printf("left");
     }
     else { 
        

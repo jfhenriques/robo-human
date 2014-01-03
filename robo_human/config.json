@@ -1,7 +1,7 @@
 {
 	"joystickDevice": "/dev/input/js0",
 	"roboName": "Robot1",
-	"roboId": 1,
+	"roboPos": 3,
 	"hostname": "localhost",
 	"viewers": [
 		{
