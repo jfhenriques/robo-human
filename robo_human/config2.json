@@ -1,6 +1,6 @@
 {
-	"joystickDevice": "/dev/input/js0",
-	"roboName": "Robot 1",
+	"joystickDevice": "/dev/input/js1",
+	"roboName": "Robot 2",
 	"roboPos": 5,
 	"hostname": "localhost",
 	"viewers": [
